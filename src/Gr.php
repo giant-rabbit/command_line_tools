@@ -24,6 +24,7 @@ class Gr {
     $found_args = false ;
     $app_args = array() ;
     $sub_args = array() ;
+    $current_index = false ;
     
     foreach ($args as $arg) {
       if ( in_array($arg, $this->get_subcommands()) ) {
@@ -39,23 +40,29 @@ class Gr {
     }
 
     $app_parsed = $this->optionKit->parse($app_args) ;
-    if (!empty($app_parsed->keys)) : foreach ($app_parsed->keys as $key=>$obj) {
-      $found_args = true ;
-      $this->args[$key] = $obj->value ;
-    } endif ;
+    if (!empty($app_parsed->keys)) { 
+      foreach ($app_parsed->keys as $key=>$obj) {
+        $found_args = true ;
+        $this->args[$key] = $obj->value ;
+      }
+    } ;
     
-    if (!empty($sub_args)): foreach($sub_args as $subcommand => $cmd_args) {
-      $found_args = true ;
-      $className = "Gr\\Command\\" . commandToClassname($subcommand) ;
-      $parsed = $className::option_kit()->parse($cmd_args) ;
-      $parsed_sub[$subcommand] = array() ;
-      if (!empty($parsed->keys)) : foreach ($parsed->keys as $key => $obj) {
-        $parsed_sub[$subcommand][$key] = $obj->value ;
-      } endif ;
-
-      $this->args['subcommands'] = $parsed_sub ;
-
-    } endif ;
+    if (!empty($sub_args)) { 
+      foreach($sub_args as $subcommand => $cmd_args) {
+        $found_args = true ;
+        $className = "Gr\\Command\\" . commandToClassname($subcommand) ;
+        $parsed = $className::option_kit()->parse($cmd_args) ;
+        $parsed_sub[$subcommand] = array() ;
+        if (!empty($parsed->keys)) {
+          foreach ($parsed->keys as $key => $obj) {
+            $parsed_sub[$subcommand][$key] = $obj->value ;
+          }
+        }
+  
+        $this->args['subcommands'] = $parsed_sub ;
+  
+      }
+    }
     
     return $found_args ; // true if args present, false if not.
   }
@@ -102,16 +109,18 @@ class Gr {
       exit ;
     }
   
-    if ($this->args['help']) {
+    if (isset($this->args['help']) && $this->args['help']) {
       $this->print_help() ;
       exit ;
     }
     
-    if ($this->args['subcommands']): foreach ($this->args['subcommands'] as $subcommand => $args) {
-      $className = "Gr\\Command\\" . commandToClassname($subcommand) ;
-      $command = new $className($args) ;
-      $command->run() ;
-    } endif ;
+    if ($this->args['subcommands']) {
+      foreach ($this->args['subcommands'] as $subcommand => $args) {
+        $className = "Gr\\Command\\" . commandToClassname($subcommand) ;
+        $command = new $className($args) ;
+        $command->run() ;
+      }
+    }
   }
   
 
@@ -120,8 +129,9 @@ class Gr {
    * This is meant to be called once in the constructor
    */
   protected function create_option_kit() {
-    if (is_a($this->optionKit, "GetOptionKit"))
+    if (isset($this->optionKit) && is_a($this->optionKit, "GetOptionKit")) {
       return $this->optionKit ; // don't generate again
+    }
   
     $specs = new \GetOptionKit\GetOptionKit() ;
     $specs->add('h|help', "Prints help and usage information for the GR tool.") ;

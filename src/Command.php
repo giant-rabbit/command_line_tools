@@ -29,7 +29,7 @@ class Command {
   }
   
   public function run() {
-    if ($this->args['help']) {
+    if (isset($this->args['help']) && $this->args['help']) {
       $this->print_help() ;
       exit ;
     }
@@ -41,7 +41,7 @@ class Command {
    */
   protected static function option_kit() {
     $specs = new \GetOptionKit\GetOptionKit() ;
-    $specs->add('h|help', "Prints help and usage information for the " . get_called_class() . " tool.") ;
+    $specs->add('h|help', "Prints help and usage information for this subcommand.") ;
     return $specs ;
   }
 }
