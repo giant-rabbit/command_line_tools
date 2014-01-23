@@ -1,0 +1,9 @@
+#!/usr/bin/env php
+<?php 
+
+foreach (glob(__DIR__ . "/src/helpers/*.php") as $file) { require_once $file; }
+$loader = require_once 'vendor/autoload.php' ;
+
+$app = new Gr\Gr($argv) ;
+$app->run() ;
+

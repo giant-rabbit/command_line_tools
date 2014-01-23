@@ -1,0 +1,10 @@
+{
+    "require": { 
+        "corneltek/getoptionkit": "~1.2"
+    },
+    
+    "autoload": {
+      "psr-4": {"Gr\\": "src/"}
+    }
+}
+

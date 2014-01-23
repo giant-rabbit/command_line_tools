@@ -1,0 +1,45 @@
+[
+    {
+        "name": "corneltek/getoptionkit",
+        "version": "1.2.4",
+        "version_normalized": "1.2.4.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/c9s/php-GetOptionKit.git",
+            "reference": "8f99bfb86c9d04acae76a6c0f05e24c89079a2da"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/c9s/php-GetOptionKit/zipball/8f99bfb86c9d04acae76a6c0f05e24c89079a2da",
+            "reference": "8f99bfb86c9d04acae76a6c0f05e24c89079a2da",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0"
+        },
+        "require-dev": {
+            "corneltek/phpunit-testmore": "dev-master"
+        },
+        "time": "2013-07-18 12:15:20",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "GetOptionKit": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Yo-An Lin",
+                "email": "cornelius.howl@gmail.com",
+                "homepage": "http://c9s.me"
+            }
+        ],
+        "description": "Powerful command-line option toolkit",
+        "homepage": "http://github.com/c9s/GetOptionKit"
+    }
+]
