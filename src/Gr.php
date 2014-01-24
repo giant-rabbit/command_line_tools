@@ -4,7 +4,8 @@ namespace Gr ;
 
 class Gr {
 
-  public function __construct($args) {
+  public function __construct($args=false) {
+    $args = $args ?: array() ;
     $this->create_option_kit() ;
     $this->parse_args($args) ;    
   }
@@ -106,12 +107,12 @@ class Gr {
   
     if (empty($this->args)) {
       $this->print_usage() ;
-      exit ;
+      return ;
     }
   
     if (isset($this->args['help']) && $this->args['help']) {
       $this->print_help() ;
-      exit ;
+      return ;
     }
     
     if ($this->args['subcommands']) {

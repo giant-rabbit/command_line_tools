@@ -12,9 +12,9 @@ class Command {
   public function print_help() {
     echo "\n\n" ;
     echo "GR Help: {$this->command_name()}\n" ;
-    echo "==================================================\n" ;
+    echo "==================================================\n\n" ;
     $className = get_class($this) ;
-    echo $className::DESCRIPTION . "\n\n" ;
+    echo $className::DESCRIPTION . "\n" ;
     echo $className::HELP_TEXT . "\n\n" ;
     echo "* Available Command Options:\n" ;
     echo "  ------------------------------\n" ;
@@ -31,8 +31,9 @@ class Command {
   public function run() {
     if (isset($this->args['help']) && $this->args['help']) {
       $this->print_help() ;
-      exit ;
+      return false ;
     }
+    return true ;
   }
   
   /**
