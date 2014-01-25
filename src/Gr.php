@@ -38,6 +38,12 @@ class Gr {
         $specs = $className::option_kit()->specs ;
         $parser->setSpecs( $specs );
         $sub_options = $parser->continueParse();
+        if (empty($subcommands[$subcommand])) { 
+          $subcommands[$subcommand] = array(
+            'options' => array(),
+            'arguments' => array()
+          ) ;
+        }
         foreach ($sub_options->keys as $key => $option) {
           $subcommands[$subcommand]['options'][$key] = $option->value ;
         }

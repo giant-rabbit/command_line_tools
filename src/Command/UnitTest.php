@@ -6,7 +6,7 @@ use Gr\Command as Command ;
 
 class UnitTest extends Command {
 
-  const DESCRIPTION = "Runs the test suite on the GR Tools" ;
+  const DESCRIPTION = "[NOT FUNCTIONAL YET] Runs the test suite on the GR Tools" ;
 
   const HELP_TEXT = <<<EOT
 
@@ -14,7 +14,9 @@ Run with no arguments, this command will run all unit tests.
 
 Run with a path to a unit test file or directory (relative to the test directory) it will run only the relevant tests.
 
-Usage:
+* Usage:
+  --------
+
   gr unit-test
     runs all tests
   
@@ -26,27 +28,20 @@ Usage:
 EOT;
 
   
-  public function __construct($args) {
-    parent::__construct($args) ;
+  public function __construct($opts,$args) {
+    parent::__construct($opts,$args) ;
   }
   
   
   public function run() {
     // keep this line
     if (!parent::run()) { return false ; }
+
+    $path = $this->args[0] ;
     
-    // remove everything from here to the end of this    ---------------------++
-    // function and replace with your own content                             //
-    echo "Passed args: " ;                                                    //
-    if (empty($this->args))                                                   //
-      echo "none\n\n" ;                                                       //
-    else {                                                                    //
-      print_r($this->args) ;                                                  //
-      echo "\n\n" ;                                                           //
-    }                                                                         //
-                                                                              //
-    echo "Type `gr example -h` for usage and available options.\n\n" ;        //
-    //------------------------------------------------------------------------++
+    if ($path) {
+      
+    }
   }                                                                           
   
   
@@ -79,9 +74,6 @@ EOT;
    */
   public static function option_kit() {
     $specs = Command::option_kit() ; // DO NOT DELETE THIS LINE
-    
-    //$specs->add("f|foo", "Option foo is a flag") ;
-    
     return $specs ; // DO NOT DELETE
   }
 }
