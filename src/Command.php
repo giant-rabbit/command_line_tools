@@ -3,10 +3,11 @@
 namespace Gr ;
 
 class Command {
-  public function __construct($args) {
+  public function __construct($opts,$args) {
     $className = get_class($this) ;
     $this->optionKit = $className::option_kit() ;
-    $this->args = $args ;
+    $this->opts = $opts ? $opts : array() ;
+    $this->args = $args ? $args : array() ;
   }
   
   public function print_help() {
@@ -29,7 +30,7 @@ class Command {
   }
   
   public function run() {
-    if (isset($this->args['help']) && $this->args['help']) {
+    if (isset($this->opts['help']) && $this->opts['help']) {
       $this->print_help() ;
       return false ;
     }

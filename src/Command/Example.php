@@ -44,25 +44,31 @@ EOT;
    *
    * If you need to override the constructor, be sure 
    * to keep the call to the parent constructor in place.
-   * The $args param is automatically given to the constructor
-   * by the main Gr object and gets stored to $this->args. It is
-   * an associative array of the arguments passed via the command line.
+   * The $opts and $args params are automatically given to the constructor
+   * by the main Gr object and they are stored to $this->opts. 
+   * and $this->args respectively. These are associative array of the 
+   * arguments passed via the command line.
    * 
-   * Eg. `gr example -f -b bar-value` will create $args as 
+   * Eg. `gr example -f -b bar-value arg1 arg2` will create $opts as 
    * Array [
    *   foo => 1
    *   bar => bar-value
    * ]
+   * and $args as
+   * Array [
+   *   [0] => arg1,
+   *   [1] => arg2
+   * ]
    * See the option_kit method below for more info on how
    * to define your options
    */
-  public function __construct($args) {
-    parent::__construct($args) ;
+  public function __construct($opts,$args) {
+    parent::__construct($opts,$args) ;
   }
   
   
   /** 
-   * Runs the command with the args defined in the constructor
+   * Runs the command with the opts and args defined in the constructor
    * 
    * This is the meat of your command. Keep the call to 
    * parent::run(), but replace everything else with 
@@ -74,18 +80,27 @@ EOT;
   public function run() {
     // keep this line
     if (!parent::run()) { return false ; }
-    
+
+
     // remove everything from here to the end of this    ---------------------++
     // function and replace with your own content                             //
-    echo "Passed args: " ;                                                    //
+    echo "Passed options: " ;                                                 //
+    if (empty($this->opts))                                                   //
+      echo "none\n\n" ;                                                       //
+    else {                                                                    //
+      print_r($this->opts) ;                                                  //
+      echo "\n" ;                                                             //
+    }                                                                         //
+                                                                              //
+    echo "Passed arguments: " ;                                               //
     if (empty($this->args))                                                   //
       echo "none\n\n" ;                                                       //
     else {                                                                    //
       print_r($this->args) ;                                                  //
-      echo "\n\n" ;                                                           //
+      echo "\n" ;                                                             //
     }                                                                         //
                                                                               //
-    echo "Type `gr example -h` for usage and available options.\n\n" ;        //
+    echo "\nType `gr example -h` for usage and available options.\n\n" ;      //
     //------------------------------------------------------------------------++
   }                                                                           
   
@@ -98,7 +113,7 @@ EOT;
    * so you don't need to define it. Otherwise, you define your options
    * here in the form:
    *
-   * $spec->add("x|xray", "Description of xray option") ;
+   * $specs->add("x|xray", "Description of xray option") ;
    *
    * where 'x' is the short form (-x) and 'xray' is the long
    * form (--xray).

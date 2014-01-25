@@ -14,6 +14,10 @@
  * To run just this test, cd into `test` and run `phpunit path/to/this/file`
  */
 class ExampleTest extends Gr\TestCase\TestCase {
+
+  protected function setup() {
+    $this->gr = new \Gr\Gr() ;
+  }
   
   /**
    * Test names must be in the form `testWhatever`. That is, lowercase `test`
@@ -22,4 +26,5 @@ class ExampleTest extends Gr\TestCase\TestCase {
   public function testWillAlwaysPass() {
     $this->assertTrue(true) ;
   }
+  
 }

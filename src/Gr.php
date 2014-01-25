@@ -4,10 +4,13 @@ namespace Gr ;
 
 class Gr {
 
+  public $args = array() ;
+  public $opts = array() ;
+  public $subcommands = array() ;
+
   public function __construct($args=false) {
-    $args = $args ?: array() ;
     $this->create_option_kit() ;
-    $this->parse_args($args) ;    
+    if ($args) { $this->parse_args($args) ; }
   }
   
   public function get_subcommands() {
@@ -21,51 +24,42 @@ class Gr {
   }
   
   public function parse_args($args) {
+    $subcommands = array() ;
+    $arguments = array() ;
+    $options = array() ;
 
-    $found_args = false ;
-    $app_args = array() ;
-    $sub_args = array() ;
-    $current_index = false ;
-    
-    foreach ($args as $arg) {
-      if ( in_array($arg, $this->get_subcommands()) ) {
-        $sub_args[$arg] = array() ;
-        $current_index = $arg ;
-      }
-      
-      if ($current_index) {
-        $sub_args[$current_index][] = $arg ;
-      } else {
-        $app_args[] = $arg ;
-      }
-    }
-
-    $app_parsed = $this->optionKit->parse($app_args) ;
-    if (!empty($app_parsed->keys)) { 
-      foreach ($app_parsed->keys as $key=>$obj) {
-        $found_args = true ;
-        $this->args[$key] = $obj->value ;
-      }
-    } ;
-    
-    if (!empty($sub_args)) { 
-      foreach($sub_args as $subcommand => $cmd_args) {
-        $found_args = true ;
+    $parser = new \GetOptionKit\ContinuousOptionParser($this->optionKit->specs) ;
+    $app_options = $parser->parse($args) ;
+    while( ! $parser->isEnd() ) {
+      if( in_array($parser->getCurrentArgument(), $this->get_subcommands() )) {
+        $subcommand = $parser->advance() ;
+        
         $className = "Gr\\Command\\" . commandToClassname($subcommand) ;
-        $parsed = $className::option_kit()->parse($cmd_args) ;
-        $parsed_sub[$subcommand] = array() ;
-        if (!empty($parsed->keys)) {
-          foreach ($parsed->keys as $key => $obj) {
-            $parsed_sub[$subcommand][$key] = $obj->value ;
-          }
+        $specs = $className::option_kit()->specs ;
+        $parser->setSpecs( $specs );
+        $sub_options = $parser->continueParse();
+        foreach ($sub_options->keys as $key => $option) {
+          $subcommands[$subcommand]['options'][$key] = $option->value ;
         }
-  
-        $this->args['subcommands'] = $parsed_sub ;
-  
+      } else {
+        $arguments[] = $parser->advance();
       }
     }
     
-    return $found_args ; // true if args present, false if not.
+    foreach ($app_options->keys as $key => $option) {
+      $options[$key] = $option->value ;
+    }
+    $this->opts = $options ;
+    $this->subcommands = $subcommands ;
+
+    if (empty($this->subcommands)) {
+      $this->args = $arguments ;
+    } elseif (!empty($arguments)) {
+      $k = array_keys($this->subcommands) ;
+      $idx = $k[sizeof($k)-1] ;
+      reset($this->subcommands) ;
+      $this->subcommands[$idx]['arguments'] = $arguments ;
+    }
   }
   
   public function print_help() {
@@ -97,34 +91,39 @@ class Gr {
   
   public function print_usage() {
     echo "\n+-----------------------------------------------------------+\n" ;
-    echo "| Usage: gr <app options> <subcommand> <subcommand options> |\n" ;
-    echo "| For help type `gr -h`                                     |\n" ;
-    echo "+-----------------------------------------------------------+\n\n" ;
+    echo   "| Usage: gr <app options> <subcommand> <subcommand options> |\n" ;
+    echo   "| For help type `gr -h`                                     |\n" ;
+    echo   "+-----------------------------------------------------------+\n\n" ;
   }
   
 
   public function run() {
   
-    if (empty($this->args)) {
+    if ($this->no_action()) {
       $this->print_usage() ;
       return ;
     }
   
-    if (isset($this->args['help']) && $this->args['help']) {
+    if (isset($this->opts['help']) && $this->opts['help']) {
       $this->print_help() ;
       return ;
     }
     
-    if ($this->args['subcommands']) {
-      foreach ($this->args['subcommands'] as $subcommand => $args) {
+    if ($this->subcommands) {
+      foreach ($this->subcommands as $subcommand => $arr) {
         $className = "Gr\\Command\\" . commandToClassname($subcommand) ;
-        $command = new $className($args) ;
+        $opts = $arr['options'] ;
+        $args = $arr['arguments'] ;
+        $command = new $className($opts,$args) ;
         $command->run() ;
       }
     }
   }
   
-
+  
+  protected function no_action() {
+    return empty($this->args) && empty($this->opts) && empty($this->subcommands) ;
+  }
 
   /**
    * This is meant to be called once in the constructor
