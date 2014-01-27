@@ -27,7 +27,8 @@ class GrTest extends Gr\TestCase\TestCase {
         'options' => array(
           'foo' => 1,
           'bar' => 'baz'
-        )
+        ),
+        'arguments' => array()
       )
     ) ;
   
@@ -73,4 +74,5 @@ class GrTest extends Gr\TestCase\TestCase {
     $gr = new Gr\Gr($args) ;
     $gr->run() ;
   }
+  
 }

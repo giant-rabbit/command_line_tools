@@ -30,7 +30,7 @@ class Command {
   }
   
   public function run() {
-    if (isset($this->opts['help']) && $this->opts['help']) {
+    if (gr_array_fetch($this->opts,'help')) {
       $this->print_help() ;
       return false ;
     }

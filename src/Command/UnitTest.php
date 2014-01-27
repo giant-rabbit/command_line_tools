@@ -2,11 +2,12 @@
 
 namespace Gr\Command ;
 use Gr\Command as Command ;
+use Gr\Utils as Utils ;
 
 
 class UnitTest extends Command {
 
-  const DESCRIPTION = "[NOT FUNCTIONAL YET] Runs the test suite on the GR Tools" ;
+  const DESCRIPTION = "Runs the test suite on the GR Tools or subset thereof" ;
 
   const HELP_TEXT = <<<EOT
 
@@ -17,13 +18,13 @@ Run with a path to a unit test file or directory (relative to the test directory
 * Usage:
   --------
 
-  gr unit-test
+  gr <options> unit-test
     runs all tests
   
-  gr unit-test Command
+  gr <options> unit-test Command
     runs all tests in the test/Command Directory 
   
-  gr unit-test Command/RestoreBackup
+  gr <options> unit-test Command/RestoreBackup
     runs the tests in the (fictitious) file test/Command/RestoreBackup.php
 EOT;
 
@@ -32,16 +33,42 @@ EOT;
     parent::__construct($opts,$args) ;
   }
   
+  public function get_phpunit_options() {
+    $opts = array(
+      'tap',
+      'testdox',
+      'colors',
+      'stop-on-error',
+      'stop-on-failure',
+      'stop-on-skipped',
+      'stop-on-incomplete',
+      'strict',
+      'verbose',
+      'debug'
+    );
+    
+    $ret = '' ;
+    foreach ($opts as $opt) {
+      if (gr_array_fetch($this->opts,$opt)) {
+        $ret .= "--{$opt} " ;
+      }
+    }
+    
+    return trim($ret) ;
+  }
   
   public function run() {
     // keep this line
     if (!parent::run()) { return false ; }
-
-    $path = $this->args[0] ;
     
-    if ($path) {
-      
-    }
+    $option_string = $this->get_phpunit_options() ;
+    
+    chdir(PROJECT_ROOT . '/test') ;
+    $path = gr_array_fetch($this->args, 0, '.') ;
+    $cmd = "phpunit {$option_string} {$path}" ;
+    $streams = Utils\Shell::run($cmd, array('throw_exception_on_nonzero'=>false)) ;
+    echo $streams[0] ;
+    
   }                                                                           
   
   
@@ -74,6 +101,16 @@ EOT;
    */
   public static function option_kit() {
     $specs = Command::option_kit() ; // DO NOT DELETE THIS LINE
+    $specs->add('tap','Report test execution progress in TAP format.');
+    $specs->add('testdox','Report test execution progress in TestDox format.');
+    $specs->add('colors','Use colors in output.');
+    $specs->add('stop-on-error','Stop execution upon first error.');
+    $specs->add('stop-on-failure','Stop execution upon first error or failure.');
+    $specs->add('stop-on-skipped','Stop execution upon first skipped test.');
+    $specs->add('stop-on-incomplete','Stop execution upon first incomplete test.');
+    $specs->add('strict','Run tests in strict mode.');
+    $specs->add('v|verbose','Output more verbose information.');
+    $specs->add('debug','Display debugging information during test execution.');
     return $specs ; // DO NOT DELETE
   }
 }

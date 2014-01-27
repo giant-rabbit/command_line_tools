@@ -13,3 +13,11 @@ function classnameToCommand($class_name) {
   $ret = implode('-',$a) ;
   return $ret ;
 }
+
+function gr_array_fetch($array,$idx,$default=false) {
+  if (isset($array[$idx])) {
+    return $array[$idx] ;
+  } else {
+    return $default ;
+  }
+}
