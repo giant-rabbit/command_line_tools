@@ -62,7 +62,7 @@ EOT;
    * See the option_kit method below for more info on how
    * to define your options
    */
-  public function __construct($opts,$args) {
+  public function __construct($opts=false,$args=false) {
     parent::__construct($opts,$args) ;
   }
   

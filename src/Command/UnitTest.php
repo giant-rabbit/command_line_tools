@@ -29,7 +29,7 @@ Run with a path to a unit test file or directory (relative to the test directory
 EOT;
 
   
-  public function __construct($opts,$args) {
+  public function __construct($opts=false,$args=false) {
     parent::__construct($opts,$args) ;
   }
   
