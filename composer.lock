@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "4797de4bfc4b4bb4b08ff7b7149b3802",
+    "hash": "c5a994d35fa32af7e7d170deed8b610c",
     "packages": [
         {
             "name": "corneltek/getoptionkit",
@@ -45,6 +45,45 @@
             "description": "Powerful command-line option toolkit",
             "homepage": "http://github.com/c9s/GetOptionKit",
             "time": "2013-07-18 12:15:20"
+        },
+        {
+            "name": "giant-rabbit/php-util",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/giant-rabbit/php-util.git",
+                "reference": "fb667956b55b87454a36734260596fa2bb253c35"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/giant-rabbit/php-util/zipball/fb667956b55b87454a36734260596fa2bb253c35",
+                "reference": "fb667956b55b87454a36734260596fa2bb253c35",
+                "shasum": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "GR\\": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Peter Haight",
+                    "email": "peterh@giantrabbit.com"
+                }
+            ],
+            "description": "Some PHP functions we use a lot.",
+            "homepage": "https://github.com/giant-rabbit/php-util",
+            "time": "2014-01-29 01:02:39"
         }
     ],
     "packages-dev": [
@@ -467,9 +506,9 @@
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": [
-
-    ],
+    "stability-flags": {
+        "giant-rabbit/php-util": 20
+    },
     "platform": [
 
     ],
