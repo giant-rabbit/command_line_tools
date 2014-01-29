@@ -32,6 +32,15 @@ class RestoreLatestS3BackupTest extends Gr\TestCase\TestCase {
   }
 
   public function testGetDatabaseCredentialsDrupal() {
+    $this->cmd->set_working_directory($this->drupal_root) ;
+    $creds = $this->cmd->get_database_credentials() ;
+    $this->assertEquals($creds['host'],     'drupal_database_host', 'database host should equal `drupal_database_host`') ;
+    $this->assertEquals($creds['database'], 'drupal_database_name', 'database name should equal `drupal_database_name`') ;
+    $this->assertEquals($creds['username'], 'drupal_database_user', 'database username should equal `drupal_database_user`') ;
+    $this->assertEquals($creds['password'], 'drupal_database_password', 'database name should equal `drupal_database_password`') ;
+  }
   
+  public function testFetchAwsCredentialsDrupal() {
+    $this->markTestIncomplete() ;
   }
 }

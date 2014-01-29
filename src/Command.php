@@ -50,7 +50,10 @@ class Command {
     echo "\n\n" ;
   }
   
-  
+  protected function exit_with_message($msg) {
+    echo "\n{$msg}\n" ;
+    exit ;
+  }
   
   /**
    * This method should be extended in subclasses to 

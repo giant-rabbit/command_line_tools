@@ -22,12 +22,24 @@ EOT;
   
   public function __construct($opts=false,$args=false) {
     parent::__construct($opts,$args) ;
+    $this->pdo = $this->get_database_connection() ;
+    if (!isset($this->opts['id']) 
+    || !isset($this->opts['secret'])
+    || !isset($this->opts['bucket'])) {
+      $this->fetch_aws_credentials() ;
+    }
+
+    \S3::setAuth($this->opts['id'], $this->opts['secret']) ;
   }
   
   public function run() {
-    // keep this line
     if (!parent::run()) { return false ; }
-    $this->get_database_credentials() ;
+
+    $bucket = $this->opts['bucket'] ;
+    $contents = \S3::getBucket($bucket) ;
+    foreach ($contents as $file) {
+      echo "{$file}\n" ;
+    }
   }
   
   public function get_environment($dir=false) {
@@ -46,7 +58,7 @@ EOT;
     return false ;
   }
   
-  function get_database_credentials() {
+  public function get_database_credentials() {
     $env = $this->get_environment($this->working_directory) ;
     
     if ('wordpress' == $env) {
@@ -58,6 +70,42 @@ EOT;
     }
   }
   
+  public function fetch_aws_credentials() {
+    $env = $this->get_environment() ;
+    if ('drupal' === $env) {
+      $qry = $this->pdo->query("SELECT * FROM backup_migrate_destinations WHERE type='S3'") ;
+      
+      if ($qry->rowCount() === 1) {
+        $row = $qry->fetch() ;
+        $url = $row['location'] ;
+        $creds = $this->parse_aws_url($url) ;
+        
+        if (!isset($this->opts['id'])) { $this->opts['id'] = $creds['id'] ; }
+        if (!isset($this->opts['secret'])) { $this->opts['secret'] = $creds['secret'] ; }
+        if (!isset($this->opts['bucket'])) { $this->opts['bucket'] = $creds['bucket'] ; }
+        return true ;
+      }
+
+      if (!$qry->rowCount())    { $this->exit_with_message("No S3 locations found in database. Please try again and specify id, secret, and bucket."); }
+      if ($qry->rowCount() > 1) { $this->exit_with_message("Multiple S3 locations found in database. Please try again and specify bucket"); }
+      
+      return false ;
+    } elseif ('wordpress' === $env) {
+      $this->exit_with_message("WORDPRESS NOT YET SUPPORTED") ;
+      exit ;
+    }
+  }
+  
+  protected function get_database_connection($options=null) {
+    $creds = $this->get_database_credentials() ;
+    extract($creds) ;
+    $dsn = "mysql:host={$host};dbname={$database}" ;
+    $dbh = new \PDO($dsn, $username, $password, $options) ;
+    $dbh->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION ); 
+    $dbh->setAttribute( \PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC );
+    return $dbh ;
+  }
+  
   protected function get_wordpress_database_credentials($dir) {
     $f = $dir . "/wp-config.php" ;
     $parsed = \Gr\Utils\Parser::parse_wp_config($f) ;
@@ -67,6 +115,36 @@ EOT;
       'password' => $parsed['constants']['DB_PASSWORD'] ,
       'database' => $parsed['constants']['DB_NAME'] ,
     );
+  }
+  
+  protected function get_drupal_database_credentials($dir) {
+    $f = $dir . "/sites/default/settings.php" ;
+    $parsed = \Gr\Utils\Parser::parse_drupal_settings($f) ;
+    return array(
+      'host'     => $parsed['databases'][0]['host'] ,
+      'username' => $parsed['databases'][0]['username'] ,
+      'password' => $parsed['databases'][0]['password'] ,
+      'database' => $parsed['databases'][0]['database'] ,
+    );
+  }
+  
+  protected function fetch_aws_url() {
+    $db_creds = $this->get_database_credentials() ;
+    
+  }
+  
+  protected function parse_aws_url($url) {
+    //$regex = "/^[http|https]\:\/\/(.+?):(.+?)@s3\.amazonaws\.com\/(.+?)\/?$/" ;
+    $regex = "/^http[s]?\:\/\/(.+?):(.+?)@s3\.amazonaws\.com\/(.+?)\/?$/" ;
+    if (preg_match($regex, $url, $matches)) {      
+      return array(
+        'id' => $matches[1],
+        'secret' => $matches[2],
+        'bucket' => $matches[3],
+      ) ;
+    } else {
+      throw new Exception("Could not parse AWS URL") ;
+    }
   }
   
   
@@ -102,6 +180,7 @@ EOT;
     $specs->add("r|root?",   "Local root directory of site") ;
     $specs->add("i|id?",     "AWS Access Key ID") ;
     $specs->add("s|secret?", "AWS Secret Access Key") ;
+    $specs->add("b|bucket?", "S3 Bucket from which to retrieve backup") ;
     $specs->add("exclude-files", "Don't restore files directories") ;
     
     return $specs ; // DO NOT DELETE
