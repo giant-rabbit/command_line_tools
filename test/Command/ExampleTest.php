@@ -13,10 +13,10 @@
  * To run ALL unit tests, cd into the `test` directory and run `phpunit .`
  * To run just this test, cd into `test` and run `phpunit path/to/this/file`
  */
-class ExampleTest extends Gr\TestCase\TestCase {
+class ExampleTest extends GR\TestCase\TestCase {
 
   protected function setup() {
-    $this->gr = new \Gr\Gr() ;
+    $this->gr = new \GR\GR() ;
   }
   
   /**

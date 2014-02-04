@@ -1,7 +1,7 @@
 <?php 
 
-namespace Gr\Command ;
-use Gr\Command as Command ;
+namespace GR\Command ;
+use GR\Command as Command ;
 
 
 /**
@@ -45,7 +45,7 @@ EOT;
    * If you need to override the constructor, be sure 
    * to keep the call to the parent constructor in place.
    * The $opts and $args params are automatically given to the constructor
-   * by the main Gr object and they are stored to $this->opts. 
+   * by the main GR object and they are stored to $this->opts. 
    * and $this->args respectively. These are associative array of the 
    * arguments passed via the command line.
    * 

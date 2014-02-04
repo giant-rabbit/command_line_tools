@@ -1,6 +1,7 @@
 {
     "require": { 
-      "corneltek/getoptionkit": "~1.2"
+      "corneltek/getoptionkit": "~1.2",
+      "giant-rabbit/php-util": "dev-master"
     },
     
     "require-dev": {
@@ -9,7 +10,7 @@
     
     "autoload": {
       "psr-4": {
-        "Gr\\": "src/"
+        "GR\\": "src/"
       }
     }
 }

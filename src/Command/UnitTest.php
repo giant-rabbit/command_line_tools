@@ -1,8 +1,7 @@
 <?php 
 
-namespace Gr\Command ;
-use Gr\Command as Command ;
-use Gr\Utils as Utils ;
+namespace GR\Command ;
+use GR\Command as Command ;
 
 
 class UnitTest extends Command {
@@ -66,7 +65,7 @@ EOT;
     chdir(PROJECT_ROOT . '/test') ;
     $path = gr_array_fetch($this->args, 0, '.') ;
     $cmd = "phpunit {$option_string} {$path}" ;
-    $streams = Utils\Shell::run($cmd, array('throw_exception_on_nonzero'=>false)) ;
+    $streams = \GR\Shell::command($cmd, array('throw_exception_on_nonzero'=>false)) ;
     echo $streams[0] ;
     
   }                                                                           

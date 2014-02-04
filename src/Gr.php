@@ -1,8 +1,8 @@
 <?php 
 
-namespace Gr ;
+namespace GR ;
 
-class Gr {
+class GR {
 
   public $args = array() ;
   public $opts = array() ;
@@ -34,7 +34,7 @@ class Gr {
       if( in_array($parser->getCurrentArgument(), $this->get_subcommands() )) {
         $subcommand = $parser->advance() ;
         
-        $className = "Gr\\Command\\" . commandToClassname($subcommand) ;
+        $className = "GR\\Command\\" . commandToClassname($subcommand) ;
         $specs = $className::option_kit()->specs ;
         $parser->setSpecs( $specs );
         $sub_options = $parser->continueParse();
@@ -82,7 +82,7 @@ class Gr {
     echo "  (For help with specific subcommands, type `gr <subcommand> -h`)\n" ;
     
     foreach ($this->get_subcommands() as $subcommand) {
-      $className = "Gr\\Command\\" . commandToClassname($subcommand) ;
+      $className = "GR\\Command\\" . commandToClassname($subcommand) ;
       echo "\n  {$subcommand}\n" ;
       echo "    " . $className::DESCRIPTION . "\n";
     }
@@ -117,7 +117,7 @@ class Gr {
     
     if ($this->subcommands) {
       foreach ($this->subcommands as $subcommand => $arr) {
-        $className = "Gr\\Command\\" . commandToClassname($subcommand) ;
+        $className = "GR\\Command\\" . commandToClassname($subcommand) ;
         $opts = $arr['options'] ;
         $args = $arr['arguments'] ;
         $command = new $className($opts,$args) ;
