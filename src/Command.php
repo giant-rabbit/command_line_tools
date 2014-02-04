@@ -1,6 +1,6 @@
 <?php 
 
-namespace Gr ;
+namespace GR ;
 
 class Command {
   public function __construct($opts,$args) {

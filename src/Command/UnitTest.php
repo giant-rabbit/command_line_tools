@@ -1,7 +1,7 @@
 <?php 
 
-namespace Gr\Command ;
-use Gr\Command as Command ;
+namespace GR\Command ;
+use GR\Command as Command ;
 
 
 class UnitTest extends Command {

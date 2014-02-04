@@ -1,5 +1,5 @@
 <?php
-namespace Gr\TestCase ;
+namespace GR\TestCase ;
 
 /**
  * This is a class from which all of your test cases should inherit.
@@ -20,7 +20,7 @@ class TestCase extends \PHPUnit_Framework_TestCase {
    *
    * This is a convenience method used in test cases to convert a string command
    * such as `gr -x foo-bar -fb` into an array of arguments, simulating the $argv
-   * variable that gets passed to the Gr object on instantiation.
+   * variable that gets passed to the GR object on instantiation.
    */
   protected function cmd_to_argv($cmd) {
     return explode(' ', $cmd) ;

@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "c5a994d35fa32af7e7d170deed8b610c",
+    "hash": "374c4e982bd5808dbf53a71d5f0c3d1d",
     "packages": [
         {
             "name": "corneltek/getoptionkit",
