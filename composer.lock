@@ -52,12 +52,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/giant-rabbit/php-util.git",
-                "reference": "fb667956b55b87454a36734260596fa2bb253c35"
+                "reference": "c37100c3b83ca2d631287984cbcfe9901eeb8903"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giant-rabbit/php-util/zipball/fb667956b55b87454a36734260596fa2bb253c35",
-                "reference": "fb667956b55b87454a36734260596fa2bb253c35",
+                "url": "https://api.github.com/repos/giant-rabbit/php-util/zipball/c37100c3b83ca2d631287984cbcfe9901eeb8903",
+                "reference": "c37100c3b83ca2d631287984cbcfe9901eeb8903",
                 "shasum": ""
             },
             "type": "library",
@@ -83,7 +83,7 @@
             ],
             "description": "Some PHP functions we use a lot.",
             "homepage": "https://github.com/giant-rabbit/php-util",
-            "time": "2014-01-29 01:02:39"
+            "time": "2014-02-05 01:50:50"
         }
     ],
     "packages-dev": [

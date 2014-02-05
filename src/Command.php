@@ -29,7 +29,7 @@ class Command {
   }
   
   public function get_cli_dir() {
-    $a = Utils\Shell::run('pwd') ;
+    $a = Shell::command('pwd') ;
     return trim($a[0]) ;
   }
   

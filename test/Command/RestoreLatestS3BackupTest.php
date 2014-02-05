@@ -1,30 +1,33 @@
 <?php
 
-class RestoreLatestS3BackupTest extends Gr\TestCase\TestCase {
+class RestoreLatestS3BackupTest extends GR\TestCase\TestCase {
 
-  protected function setup() {
-    $this->cmd = new \Gr\Command\RestoreLatestS3Backup() ;
-  }
-    
   public function testGetEnvironmentDetectsWordpress() {
-    $env = $this->cmd->get_environment($this->wp_root) ;
+    chdir($this->wp_root) ;
+    $cmd = new \GR\Command\RestoreLatestS3Backup() ;
+    $env = $cmd->get_environment() ;
     $this->assertEquals('wordpress', $env, "get_environment should return 'wordpress'") ;
   }
-  
+
   public function testGetEnvironmentDetectsDrupal() {
-    $env = $this->cmd->get_environment($this->drupal_root) ;
+    chdir($this->drupal_root) ;
+    $cmd = new \GR\Command\RestoreLatestS3Backup() ;
+    $env = $cmd->get_environment() ;
     $this->assertEquals('drupal', $env, "get_environment should return 'drupal'") ;
   }
   
   public function testGetEnvironmentReturnsFalseIfNotWordpressOrDrupal() {
     $dir = TEST_ROOT . '/files' ;
-    $env = $this->cmd->get_environment($dir) ;
+    chdir($dir) ;
+    $cmd = new \GR\Command\RestoreLatestS3Backup() ;
+    $env = $cmd->get_environment() ;
     $this->assertFalse($env, "get_environment should return false") ;
   }
   
   public function testGetDatabaseCredentialsWordpress() {
-    $this->cmd->set_working_directory($this->wp_root) ;
-    $creds = $this->cmd->get_database_credentials() ;
+    chdir($this->wp_root) ;
+    $cmd = new \GR\Command\RestoreLatestS3Backup() ;
+    $creds = $cmd->get_database_credentials() ;
     $this->assertEquals($creds['host'],     'wordpress_database_host', 'database host should equal `wordpress_database_host`') ;
     $this->assertEquals($creds['database'], 'wordpress_database_name', 'database name should equal `wordpress_database_name`') ;
     $this->assertEquals($creds['username'], 'wordpress_database_user', 'database username should equal `wordpress_database_user`') ;
@@ -32,8 +35,9 @@ class RestoreLatestS3BackupTest extends Gr\TestCase\TestCase {
   }
 
   public function testGetDatabaseCredentialsDrupal() {
-    $this->cmd->set_working_directory($this->drupal_root) ;
-    $creds = $this->cmd->get_database_credentials() ;
+    chdir($this->drupal_root) ;
+    $cmd = new \GR\Command\RestoreLatestS3Backup() ;
+    $creds = $cmd->get_database_credentials() ;
     $this->assertEquals($creds['host'],     'drupal_database_host', 'database host should equal `drupal_database_host`') ;
     $this->assertEquals($creds['database'], 'drupal_database_name', 'database name should equal `drupal_database_name`') ;
     $this->assertEquals($creds['username'], 'drupal_database_user', 'database username should equal `drupal_database_user`') ;
@@ -43,4 +47,5 @@ class RestoreLatestS3BackupTest extends Gr\TestCase\TestCase {
   public function testFetchAwsCredentialsDrupal() {
     $this->markTestIncomplete() ;
   }
+
 }

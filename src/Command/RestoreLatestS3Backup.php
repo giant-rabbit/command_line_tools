@@ -1,7 +1,7 @@
 <?php 
 
-namespace Gr\Command ;
-use Gr\Command as Command ;
+namespace GR\Command ;
+use GR\Command as Command ;
 
 class RestoreLatestS3Backup extends Command {
 
@@ -20,17 +20,6 @@ Ideally, given the site name, this tool can find or make intelligent guesses abo
 EOT;
 
   
-  public function __construct($opts=false,$args=false) {
-    parent::__construct($opts,$args) ;
-    $this->pdo = $this->get_database_connection() ;
-    if (!isset($this->opts['id']) 
-    || !isset($this->opts['secret'])
-    || !isset($this->opts['bucket'])) {
-      $this->fetch_aws_credentials() ;
-    }
-
-    \S3::setAuth($this->opts['id'], $this->opts['secret']) ;
-  }
   
   public function run() {
     if (!parent::run()) { return false ; }
@@ -40,6 +29,17 @@ EOT;
     foreach ($contents as $file) {
       echo "{$file}\n" ;
     }
+  }
+  
+  public function bootstrap_s3() {
+    $this->pdo = $this->get_database_connection() ;
+    if (!isset($this->opts['id']) 
+    || !isset($this->opts['secret'])
+    || !isset($this->opts['bucket'])) {
+      $this->fetch_aws_credentials() ;
+    }
+
+    \S3::setAuth($this->opts['id'], $this->opts['secret']) ;
   }
   
   public function get_environment($dir=false) {
@@ -108,7 +108,7 @@ EOT;
   
   protected function get_wordpress_database_credentials($dir) {
     $f = $dir . "/wp-config.php" ;
-    $parsed = \Gr\Utils\Parser::parse_wp_config($f) ;
+    $parsed = \GR\Parser::parse_wp_config($f) ;
     return array(
       'host' => $parsed['constants']['DB_HOST'] ,
       'username' => $parsed['constants']['DB_USER'] ,
@@ -119,12 +119,12 @@ EOT;
   
   protected function get_drupal_database_credentials($dir) {
     $f = $dir . "/sites/default/settings.php" ;
-    $parsed = \Gr\Utils\Parser::parse_drupal_settings($f) ;
+    $parsed = \GR\Parser::parse_drupal_settings($f) ;
     return array(
-      'host'     => $parsed['databases'][0]['host'] ,
-      'username' => $parsed['databases'][0]['username'] ,
-      'password' => $parsed['databases'][0]['password'] ,
-      'database' => $parsed['databases'][0]['database'] ,
+      'host'     => $parsed['databases']['default']['default']['host'] ,
+      'username' => $parsed['databases']['default']['default']['username'] ,
+      'password' => $parsed['databases']['default']['default']['password'] ,
+      'database' => $parsed['databases']['default']['default']['database'] ,
     );
   }
   
