@@ -81,6 +81,7 @@ EOT;
     $text = str_replace("\n","\n\n",$rslt->text) ;
     
     echo $text ;
+    echo "\n" ;
   }                                                                           
   
   
