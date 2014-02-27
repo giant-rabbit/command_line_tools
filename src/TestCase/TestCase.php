@@ -8,11 +8,18 @@ namespace GR\TestCase ;
  */
 
 class TestCase extends \PHPUnit_Framework_TestCase {
-  
-  /**
-   * This is slightly hacky, but to keep this 
-  public function testOk() {
-    $this->assertTrue(true) ;
+
+  protected $files_root ;
+  protected $wp_root ;
+  protected $drupal_root ;
+  protected $misc_root ;
+
+  public function __construct() {
+    parent::__construct() ;
+    $this->files_root = TEST_ROOT . '/files' ;
+    $this->wp_root = TEST_ROOT . '/files/wordpress' ;
+    $this->drupal_root = TEST_ROOT . '/files/drupal' ;
+    $this->misc_root = TEST_ROOT . '/files/misc' ;
   }
   
   /**

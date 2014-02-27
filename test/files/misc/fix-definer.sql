@@ -1,0 +1,2 @@
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER civicrm_website_after_insert after insert ON civicrm_website FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER civicrm_website_after_insert after insert ON civicrm_website FOR EACH ROW BEGIN
