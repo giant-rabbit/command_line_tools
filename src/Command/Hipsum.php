@@ -51,7 +51,8 @@ EOT;
    */
   public function __construct($opts=false,$args=false) {
     parent::__construct($opts,$args) ;
-    $this->num_pars = (int)$args[0] ?: 4 ;
+    $pars = \GR\Hash::fetch($args,0) ;
+    $this->num_pars = (int)$pars ?: 4 ;
   }
   
   
