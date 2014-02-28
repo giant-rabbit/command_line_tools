@@ -22,12 +22,13 @@ EOT;
   
   public function __construct($opts,$args) {
     parent::__construct($opts,$args) ;
-        
-    if (!$args[0]) {
+    
+    $input_file = \GR\Hash::fetch($args,0) ;
+    if (!$input_file && !$opts['help']) {
       throw new \Exception("This command takes one argument - the path to the file to be stripped.");
     }
     
-    $this->input_file = $args[0] ;
+    $this->input_file = $input_file ;
   }
   
   
