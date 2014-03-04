@@ -1,0 +1,31 @@
+Git Hooks
+=========
+
+Symlink each of the files in the directory to .git/hooks. See 'Installation' below for help. 
+
+The hooks will perform the following functions:
+
+*pre-commit*
+When you make a commit, this hook will run the GR Unit Test suite beforehand. If any test fails, then the commit is aborted. If you are REALLY SURE that you want to make a commit with failing tests, you can run `git commit --no-verify` and it will bypass this hook
+
+*post-merge* 
+When you merge one branch into the other or do a git pull, this hook runs `composer update` and `composer install` in order to update and install the PHP dependencies. It then runs `gr unit-test` to ensure that all your tests are still passing.
+
+Installation
+------------
+
+```
+$ cd .git/hooks
+$ ln -s ../../git-hooks/pre-commit .
+$ ln -s ../../git-hooks/post-merge .
+$ cd ../..
+```
+
+You can verify that they're properly symlinked by running each of the following:
+
+```
+$ .git/hooks/pre-commit
+$ .git/hooks/post-merge
+```
+
+and checking that the execute as expected.
