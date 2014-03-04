@@ -66,8 +66,15 @@ EOT;
     $path = gr_array_fetch($this->args, 0, '.') ;
     $cmd = "phpunit {$option_string} {$path}" ;
     $streams = \GR\Shell::command($cmd, array('throw_exception_on_nonzero'=>false)) ;
-    echo $streams[0] ;
+
+    $rslt = $streams[0];
+    echo $rslt;
     
+    if (strpos($rslt,'FAILURES!') !== false) {
+      exit(1);
+    }
+
+    exit(0);
   }                                                                           
   
   
