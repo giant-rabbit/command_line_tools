@@ -44,27 +44,16 @@ EOT;
   
   public function get_environment($dir=false) {
     $dir = $dir ?: $this->working_directory ;
-    $wp_config = $dir . '/wp-config.php' ;
-    $drupal_config = $dir . '/sites/default/settings.php' ;
-
-    if (is_file($wp_config)) {
-      return 'wordpress' ;
-    }
-    
-    if (is_file($drupal_config)) {
-      return 'drupal' ;
-    }
-    
-    return false ;
+    return detectEnvironment($dir);
   }
   
   public function get_database_credentials() {
-    $env = $this->get_environment($this->working_directory) ;
+    $env = $this->get_environment() ;
     
     if ('wordpress' == $env) {
-      return $this->get_wordpress_database_credentials($this->working_directory) ;
+      return \GR\Wordpress::get_database_credentials($this->working_directory) ;
     } elseif ('drupal' == $env) {
-      return $this->get_drupal_database_credentials($this->working_directory) ;
+      return \GR\Drupal::get_database_credentials($this->working_directory) ;
     } else {
       throw new \Exception("Could not determine environment. Please ensure you have installed and configured Drupal or Wordpress.") ;
     }
@@ -94,38 +83,6 @@ EOT;
       $this->exit_with_message("WORDPRESS NOT YET SUPPORTED") ;
       exit ;
     }
-  }
-  
-  protected function get_database_connection($options=null) {
-    $creds = $this->get_database_credentials() ;
-    extract($creds) ;
-    $dsn = "mysql:host={$host};dbname={$database}" ;
-    $dbh = new \PDO($dsn, $username, $password, $options) ;
-    $dbh->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION ); 
-    $dbh->setAttribute( \PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC );
-    return $dbh ;
-  }
-  
-  protected function get_wordpress_database_credentials($dir) {
-    $f = $dir . "/wp-config.php" ;
-    $parsed = \GR\Parser::parse_wp_config($f) ;
-    return array(
-      'host' => $parsed['constants']['DB_HOST'] ,
-      'username' => $parsed['constants']['DB_USER'] ,
-      'password' => $parsed['constants']['DB_PASSWORD'] ,
-      'database' => $parsed['constants']['DB_NAME'] ,
-    );
-  }
-  
-  protected function get_drupal_database_credentials($dir) {
-    $f = $dir . "/sites/default/settings.php" ;
-    $parsed = \GR\Parser::parse_drupal_settings($f) ;
-    return array(
-      'host'     => $parsed['databases']['default']['default']['host'] ,
-      'username' => $parsed['databases']['default']['default']['username'] ,
-      'password' => $parsed['databases']['default']['default']['password'] ,
-      'database' => $parsed['databases']['default']['default']['database'] ,
-    );
   }
   
   protected function fetch_aws_url() {

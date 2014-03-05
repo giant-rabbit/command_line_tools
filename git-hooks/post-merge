@@ -1,4 +1,3 @@
 #!/bin/bash
-composer update
 composer install
 gr unit-test
