@@ -56,14 +56,26 @@ EOT;
     return trim($ret) ;
   }
   
+  
+  /**
+   * There's some kind of incompatibility with running the PHPUnit through the GR\Shell object
+   * and bootstrapping the testing database, so this command is currently not available until
+   * that gets sorted out. Tests can be run from the test directory by typing 'phpunit .'
+   */
   public function run() {
+
+    $msg = "This command is currently unavailable. Please run `phpunit .` from the test directory instead\n" ;
+    die($msg);
+
     // keep this line
     if (!parent::run()) { return false ; }
     
+    $this->load_databases();
     $option_string = $this->get_phpunit_options() ;
     
     chdir(PROJECT_ROOT . '/test') ;
     $path = gr_array_fetch($this->args, 0, '.') ;
+
     $cmd = "phpunit {$option_string} {$path}" ;
     $streams = \GR\Shell::command($cmd, array('throw_exception_on_nonzero'=>false)) ;
 
@@ -77,7 +89,25 @@ EOT;
     exit(0);
   }                                                                           
   
-  
+  public function load_databases() {
+    echo "Reading config...\n";
+    $config = json_decode(file_get_contents(PROJECT_ROOT . "/test/config.json"));
+    
+    if (empty($config)) {
+      $err  = "\nYou are missing or have misconfigured your config.json file, ";
+      $err .= "which specifies your testing databases. Please see config.example.json ";
+      $err .= "for example usage\n\n";
+      die($err);
+    }
+    
+    echo "Loading Drupal DB...\n";
+    
+    $cnf = $config->databases->drupal ;
+    $cmd = "mysql -u {$cnf->username} -p{$cnf->password} {$cnf->database} < ./files/sql/drupal.sql";
+    $s = \GR\Shell::command($cmd);
+    echo $s[0];
+    echo "  ...done.\n\n";
+  }
   
   /**
    * Returns the available options for your command
