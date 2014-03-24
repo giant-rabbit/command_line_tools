@@ -1,0 +1,16 @@
+{
+  "databases":{
+    "drupal":{
+      "hostname":"localhost",
+      "username":"root",
+      "password":"root",
+      "database":"gr_phputils_test_drupal"
+    },
+    "wordpress":{
+      "hostname":"localhost",
+      "username":"root",
+      "password":"root",
+      "database":"gr_phputils_test_wp"
+    }
+  }
+}
