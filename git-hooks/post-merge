@@ -1,3 +1,6 @@
 #!/bin/bash
 composer install
-gr unit-test
+cwd=$(pwd)
+cd test
+phpunit .
+cd $cwd

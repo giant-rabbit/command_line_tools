@@ -64,7 +64,7 @@ EOT;
    */
   public function run() {
 
-    $msg = "This command is currently unavailable. Please run `phpunit .` from the test directory instead\n" ;
+    $msg = "The unit-test command is currently unavailable. Please run `phpunit .` from the test directory instead\n" ;
     die($msg);
 
     // keep this line

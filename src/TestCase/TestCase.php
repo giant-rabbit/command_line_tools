@@ -9,11 +9,11 @@ namespace GR\TestCase ;
 
 class TestCase extends \PHPUnit_Framework_TestCase {
 
-  protected $config
-  protected $drupal_root ;
-  protected $files_root ;
-  protected $misc_root ;
-  protected $wp_root ;
+  protected $config;
+  protected $drupal_root;
+  protected $files_root;
+  protected $misc_root;
+  protected $wp_root;
 
   public function __construct() {
     parent::__construct() ;
