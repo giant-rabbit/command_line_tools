@@ -46,14 +46,22 @@ EOT;
     // keep this line
     if (!parent::run()) { return false ; }
     
-    $sql = file_get_contents($this->input_file);
-    $regex = '/\/\*[^*]*DEFINER=[^*]*\*\//';
-    //$regex = '/DEFINER/';
-    $rslt = preg_replace($regex, '', $sql) ;
-    echo $rslt ;
+    $this->file_get_contents_chunked($this->input_file, 4096, function ($chunk, &$handle, $iteration){
+      $regex = '/\/\*[^*]*DEFINER=[^*]*\*\//';
+      echo preg_replace($regex, '', $chunk) ;
+    });
   }
   
-  
+  protected function file_get_contents_chunked($file, $chunk_size, $callback) {
+    
+    $handle = fopen($file,'r');
+    $i = 0;
+    while (!feof($handle)){
+      call_user_func_array($callback, array(fread($handle, $chunk_size), &$handle, $i));
+      $i++;
+    }
+    fclose($handle);
+  }
   
   /**
    * Returns the available options for your command
