@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "374c4e982bd5808dbf53a71d5f0c3d1d",
+    "hash": "3d0cf4611fa754d2e53addfa00ac1cb9",
     "packages": [
         {
             "name": "corneltek/getoptionkit",
@@ -84,21 +84,47 @@
             "description": "Some PHP functions we use a lot.",
             "homepage": "https://github.com/giant-rabbit/php-util",
             "time": "2014-02-05 18:24:18"
+        },
+        {
+            "name": "pear-pear.php.net/Config",
+            "version": "1.10.12",
+            "dist": {
+                "type": "file",
+                "url": "http://pear.php.net/get/Config-1.10.12.tgz",
+                "reference": null,
+                "shasum": null
+            },
+            "require": {
+                "php": ">=4.3.0.0"
+            },
+            "replace": {
+                "pear-pear/config": "== 1.10.12.0"
+            },
+            "type": "pear-library",
+            "autoload": {
+                "classmap": [
+                    ""
+                ]
+            },
+            "include-path": [
+                "/"
+            ],
+            "description": "The Config package provides methods for configuration manipulation.\n* Creates configurations from scratch\n* Parses and outputs different formats (XML, PHP, INI, Apache...)\n* Edits existing configurations\n* Converts configurations to other formats\n* Allows manipulation of sections, comments, directives...\n* Parses configurations into a tree structure\n* Provides XPath like access to directives"
         }
     ],
     "packages-dev": [
         {
             "name": "phpunit/php-code-coverage",
-            "version": "1.2.16",
+            "version": "1.2.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "69e55e68481cf708a6db43aff0b504e31402fe27"
+                "reference": "6ef2bf3a1c47eca07ea95f0d8a902a6340390b34"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/69e55e68481cf708a6db43aff0b504e31402fe27",
-                "reference": "69e55e68481cf708a6db43aff0b504e31402fe27",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/6ef2bf3a1c47eca07ea95f0d8a902a6340390b34",
+                "reference": "6ef2bf3a1c47eca07ea95f0d8a902a6340390b34",
                 "shasum": ""
             },
             "require": {
@@ -146,7 +172,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2014-02-25 03:34:05"
+            "time": "2014-03-28 10:53:45"
         },
         {
             "name": "phpunit/php-file-iterator",
