@@ -28,7 +28,7 @@ EOT;
   public function run() {
     if (!parent::run()) { return false ; }
     $drupal_root = \GR\Shell::command("drush st 'Drupal root' --pipe");
-    $drupal_root = $drupal_root[0];
+    $drupal_root = trim($drupal_root[0]);
     if (empty($drupal_root)) {
       throw new \Exception("Unable to determine the Drupal root directory. Make sure you are running this command inside a Drupal website's root directory.");
     }
