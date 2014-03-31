@@ -46,7 +46,9 @@ EOT;
       if ($env_variable[0] == 'APP_ENV' || $env_variable[0] == 'APP_NAME') {
         $env_variable_name = strtolower($env_variable[0]);
         $$env_variable_name = $env_variable[1];
-        putenv("{$env_variable[0]}={$env_variable[1]}");
+        if (putenv("{$env_variable[0]}={$env_variable[1]}") === FALSE) {
+          throw new \Exception("Unable to set {$env_variable[0]} environment variable.");
+        }
       }
     }
     if (getenv("APP_ENV") === FALSE) {
