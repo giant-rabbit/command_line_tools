@@ -28,20 +28,22 @@ class RestoreLatestS3BackupTest extends GR\TestCase\TestCase {
     chdir($this->wp_root) ;
     $cmd = new \GR\Command\RestoreLatestS3Backup() ;
     $creds = $cmd->get_database_credentials() ;
-    $this->assertEquals($creds['host'],     'wordpress_database_host', 'database host should equal `wordpress_database_host`') ;
-    $this->assertEquals($creds['database'], 'wordpress_database_name', 'database name should equal `wordpress_database_name`') ;
-    $this->assertEquals($creds['username'], 'wordpress_database_user', 'database username should equal `wordpress_database_user`') ;
-    $this->assertEquals($creds['password'], 'wordpress_database_password', 'database name should equal `wordpress_database_password`') ;
+    $config = $this->get_config();
+    $this->assertEquals($creds['host'],     $config->databases->wordpress->hostname, 'database host should equal config value') ;
+    $this->assertEquals($creds['database'], $config->databases->wordpress->database, 'database name should equal config value') ;
+    $this->assertEquals($creds['username'], $config->databases->wordpress->username, 'database username should equal config value') ;
+    $this->assertEquals($creds['password'], $config->databases->wordpress->password, 'database password should equal config value') ;
   }
 
   public function testGetDatabaseCredentialsDrupal() {
     chdir($this->drupal_root) ;
     $cmd = new \GR\Command\RestoreLatestS3Backup() ;
     $creds = $cmd->get_database_credentials() ;
-    $this->assertEquals($creds['host'],     'drupal_database_host', 'database host should equal `drupal_database_host`') ;
-    $this->assertEquals($creds['database'], 'drupal_database_name', 'database name should equal `drupal_database_name`') ;
-    $this->assertEquals($creds['username'], 'drupal_database_user', 'database username should equal `drupal_database_user`') ;
-    $this->assertEquals($creds['password'], 'drupal_database_password', 'database name should equal `drupal_database_password`') ;
+    $config = $this->get_config();
+    $this->assertEquals($creds['host'],     $config->databases->drupal->hostname, 'database host should equal config value') ;
+    $this->assertEquals($creds['database'], $config->databases->drupal->database, 'database name should equal config value') ;
+    $this->assertEquals($creds['username'], $config->databases->drupal->username, 'database username should equal config value') ;
+    $this->assertEquals($creds['password'], $config->databases->drupal->password, 'database password should equal config value') ;
   }
   
   public function testFetchAwsCredentialsDrupal() {

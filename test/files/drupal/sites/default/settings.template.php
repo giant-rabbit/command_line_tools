@@ -200,15 +200,16 @@
  *   );
  * @endcode
  */
+
 $databases = array (
   'default' => 
   array (
     'default' => 
     array (
-      'database' => 'drupal_database_name',
-      'username' => 'drupal_database_user',
-      'password' => 'drupal_database_password',
-      'host' => 'drupal_database_host',
+      'database' => '{{database}}',
+      'username' => '{{username}}',
+      'password' => '{{password}}',
+      'host'     => '{{hostname}}',
       'port' => '',
       'driver' => 'mysql',
       'prefix' => '',
