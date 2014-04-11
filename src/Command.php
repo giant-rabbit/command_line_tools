@@ -55,6 +55,43 @@ class Command {
     exit ;
   }
   
+  protected function print_line($msg) {
+    echo "{$msg}\n" ;
+  }
+  
+  /**
+   * function prompt
+   * @param (string) $prompt
+   * @param (array) $valid_inputs
+   * @param (string) $default (optional)
+   * @return (string) User provided value, filtered through $valid_inputs
+   * 
+   * Prompts user for a response
+   */
+  protected function prompt($prompt, $valid_inputs, $default = '') { 
+    while(!isset($input) || (is_array($valid_inputs) && !in_array($input, $valid_inputs)) || ($valid_inputs == 'is_file' && !is_file($input))) { 
+      echo $prompt; 
+      $input = strtolower(trim(fgets(STDIN))); 
+      if(empty($input) && !empty($default)) { 
+        $input = $default; 
+      } 
+    } 
+    return $input; 
+  }
+
+  /**
+   * function confirm 
+   * @param $prompt
+   * @return (bool) True if 'y', false if 'n'
+   *
+   * Prompts user with Yes/no question
+   */  
+  protected function confirm($prompt) {
+    $prompt = "{$prompt} [Y/n]: ";
+    $yn = $this->prompt($prompt, array('y','n'));
+    return $yn == 'y';
+  }
+  
   /**
    * This method should be extended in subclasses to 
    * return options relevant to that command
