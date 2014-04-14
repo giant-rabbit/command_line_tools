@@ -1,4 +1,6 @@
 #!/bin/bash
-composer update
 composer install
-gr unit-test
+cwd=$(pwd)
+cd test
+phpunit .
+cd $cwd

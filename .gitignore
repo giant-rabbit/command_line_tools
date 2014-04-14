@@ -1,1 +1,4 @@
 vendor/*
+test/config.json
+test/files/wordpress/wp-config.php
+test/files/drupal/sites/default/settings.php
