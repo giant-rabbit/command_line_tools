@@ -5,7 +5,7 @@ use GR\Command as Command ;
 
 class RestoreLatestS3Backup extends Command {
 
-  const DESCRIPTION = "Overwrites a site's database using the most recent backup from an Amazon S3 bucket" ;
+  const DESCRIPTION = "Overwrites a site's database and files directory using the most recent backup from an Amazon S3 bucket" ;
   const HELP_TEXT = <<<EOT
 
 Ideally, given the site name, this tool can find or make intelligent guesses
