@@ -17,19 +17,21 @@ root and S3 credentials.
 * Usage
   ---------
   
-  gr restore-latest-s3-backup <options> <sitename>
-    eg. `gr restore-latest-s3-backup smpte.org`
-    or  `gr restore-latest-s3-backup --id foo --secret bar smpte.org
+  gr restore-latest-s3-backup <options>
+    eg. `gr restore-latest-s3-backup
+    or  `gr restore-latest-s3-backup --id foo --secret bar --bucket smptebackups
 
 EOT;
 
   protected $root_dir;
 
   public function __construct($opts=false,$args=false) {
-    parent::__construct($opts,$args) ;
-    $this->root_dir = $opts['root'] ? realpath($opts['root']) : $this->get_cli_dir();
-    $this->pdo = $this->get_database_connection() ;
-    $this->bootstrap_s3();
+    parent::__construct($opts,$args);
+    if (!$opts['help']) {
+      $this->root_dir = $opts['root'] ? realpath($opts['root']) : $this->get_cli_dir();
+      $this->pdo = $this->get_database_connection();
+      $this->bootstrap_s3();
+    }
   }
   
   public function run() {

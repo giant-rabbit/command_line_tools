@@ -1,6 +1,6 @@
 # Run Tests
 
-echo "[PRECOMMIT HOOK] Running tests"
+echo "\n[PRECOMMIT HOOK] Running tests"
 cd test
 phpunit .
 rslt=$?

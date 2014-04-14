@@ -5,7 +5,7 @@ foreach (glob(__DIR__ . "/../src/lib/*.php") as $file) { require_once $file; }
 $loader = require_once __DIR__ . '/../vendor/autoload.php' ;
 
 
-echo "Reading config...\n";
+echo "* Reading config...\n";
 $config = json_decode(file_get_contents("./config.json"));
 write_config_files($config);
 
@@ -17,13 +17,13 @@ if (empty($config)) {
   die($err);
 }
 
-echo "Loading Drupal DB...\n";
+echo "* Loading Drupal DB...";
 
 $cnf = $config->databases->drupal ;
 $cmd = "mysql -u {$cnf->username} -p{$cnf->password} {$cnf->database} < ./files/sql/drupal.sql";
 $s = \GR\Shell::command($cmd);
 echo $s[0];
-echo "  ...done.\n\n";
+echo "done.\n\n";
 
 
 
