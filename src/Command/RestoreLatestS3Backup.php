@@ -98,8 +98,9 @@ EOT;
   }
   
   public function get_bucket_contents() {
-    $bucket = $this->opts['bucket'] ;
-    return \S3::getBucket($bucket) ;
+    $bucket = $this->opts['bucket'];
+    $prefix = $this->opts['prefix'];
+    return \S3::getBucket($bucket, $prefix);
   }
 
   public function get_database_connection() {
@@ -121,6 +122,7 @@ EOT;
         if (!isset($this->opts['id'])) { $this->opts['id'] = $creds['id'] ; }
         if (!isset($this->opts['secret'])) { $this->opts['secret'] = $creds['secret'] ; }
         if (!isset($this->opts['bucket'])) { $this->opts['bucket'] = $creds['bucket'] ; }
+        if (!isset($this->opts['prefix'])) { $this->opts['prefix'] = $creds['prefix'] ; }
         return true ;
       }
 
@@ -144,12 +146,13 @@ EOT;
       $bucket = $a[0];
       $prefix = sizeof($a) > 1 ? $a[1] : null;
       
-      return array(
-        'id' => $matches[1],
-        'secret' => $matches[2],
-        'bucket' => $bucket,
-        'prefix' => $prefix
+      $ret = array(
+        'id' => urldecode($matches[1]),
+        'secret' => urldecode($matches[2]),
+        'bucket' => urldecode($bucket),
+        'prefix' => urldecode($prefix)
       ) ;
+      return $ret;
     } else {
       throw new \Exception("Could not parse AWS URL") ;
     }
@@ -161,7 +164,8 @@ EOT;
     $bucket = $this->opts['bucket'];
     $tmp_dir = sys_get_temp_dir();
     $timestamp = date("U");
-    $dest = "{$tmp_dir}/{$timestamp}_{$db_dump}";
+    $db_dest = str_replace('/','_',$db_dump);
+    $dest = "{$tmp_dir}/{$timestamp}_{$db_dest}";
     $unzipped = preg_replace('/\.gz$/','',$dest);
     \S3::getObject($bucket, $db_dump, $dest);
     
@@ -185,7 +189,9 @@ EOT;
     $bucket = $this->opts['bucket'];
     $tmp_dir = sys_get_temp_dir();
     $timestamp = date("U");
-    $tmp_dest = "{$tmp_dir}/{$timestamp}_{$files_tarball}";
+    $files_dest = str_replace('/','_',$files_tarball);
+    $tmp_dest = "{$tmp_dir}/{$timestamp}_{$files_dest}";
+    $this->print_line($tmp_dest) ;
     \S3::getObject($bucket, $files_tarball, $tmp_dest);
     
     $this->print_line("  Deleting contents of sites/default/files...");
@@ -193,7 +199,8 @@ EOT;
     
     echo "  Unzipping to sites/default/files...";
     $cmd = "tar -xvf {$tmp_dest} -C {$tmp_dir}";
-    $unzipped = "{$tmp_dir}/{$files_tarball}";
+    $unzipped = "{$tmp_dir}/" . basename($files_tarball,'.tar.gz');
+    $this->print_line($unzipped);
     $unzipped = str_replace('.tar.gz','',$unzipped);
     \GR\Shell::command($cmd, array('throw_exception_on_nonzero'=>true));
     if (is_dir($unzipped)){
