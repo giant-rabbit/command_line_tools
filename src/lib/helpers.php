@@ -1,5 +1,22 @@
 <?php 
 
+function detectEnvironment($dir=false) {
+  $dir = realpath($dir) ?: getcwd();
+  $wp_config = $dir . '/wp-config.php' ;
+  $drupal_config = $dir . '/sites/default/settings.php' ;
+
+  if (is_file($wp_config)) {
+    return 'wordpress' ;
+  }
+  
+  if (is_file($drupal_config)) {
+    return 'drupal' ;
+  }
+  
+  return false ;
+}
+
+
 function commandToClassname($command_name) {
   $a = explode('-',$command_name) ;
   $b = array_map('ucfirst', $a) ;
