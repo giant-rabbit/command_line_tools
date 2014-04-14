@@ -26,9 +26,11 @@ EOT;
   protected $root_dir;
 
   public function __construct($opts=false,$args=false) {
+    $opts = $opts ?: array();
     parent::__construct($opts,$args);
-    if (!$opts['help']) {
-      $this->root_dir = $opts['root'] ? realpath($opts['root']) : $this->get_cli_dir();
+    if (!\GR\Hash::fetch($opts,'help')) {
+      $root = \GR\Hash::fetch($opts,'root');
+      $this->root_dir = $root ? realpath($root) : $this->get_cli_dir();
       $this->pdo = $this->get_database_connection();
       $this->bootstrap_s3();
     }
@@ -60,12 +62,12 @@ EOT;
     $files_latest = array_pop($files_array);
     
     $db_prompt = "Restore DB from file {$db_latest}?";
-    $should_restore_db_latest = $this->opts['no-prompts'] ? true : $this->confirm($db_prompt);
+    $should_restore_db_latest = \GR\Hash::fetch($this->opts,'no-prompts') ? true : $this->confirm($db_prompt);
     
     $should_restore_files_latest = false;
-    if (!$this->opts['exclude-files']) {
+    if (!\GR\Hash::fetch($this->opts,'exclude-files')) {
       $files_prompt = "Restore files from tarball {$files_latest}? This will remove everything that's currently in sites/default/files" ;
-      $should_restore_files_latest = $this->opts['no-prompts'] ? true : $this->confirm($files_prompt);
+      $should_restore_files_latest = \GR\Hash::fetch($this->opts,'no-prompts') ? true : $this->confirm($files_prompt);
     }
     
     if ($should_restore_db_latest)    $this->restore_database($db_latest);
@@ -106,7 +108,7 @@ EOT;
   }
 
   public function get_database_connection() {
-    $creds = $this->get_database_credentials() ;
+    $creds = $this->get_database_credentials();
     $dbn = "mysql:host={$creds['host']};dbname={$creds['database']}";
     return new \PDO($dbn,$creds['username'],$creds['password']);
   }
