@@ -12,6 +12,7 @@ class Command {
     $this->opts = $opts ? $opts : array() ;
     $this->args = $args ? $args : array() ;
     $this->working_directory = $this->get_cli_dir() ;   
+    $this->app_root = $this->get_app_root();
   }
 
   public function run() {
@@ -48,6 +49,21 @@ class Command {
     echo "  ------------------------------\n" ;
     $this->optionKit->specs->printOptions() ;
     echo "\n\n" ;
+  }
+  
+  protected function get_app_root($dir=false) {
+    
+    if ($dir == '/') {
+      throw new \Exception("Could not find application root by searching for .git directory");
+    }
+    
+    $dir = $dir ? realpath($dir) : __DIR__;
+    $files = scandir($dir);
+    if (in_array('.git',$files)) {
+      return $dir;
+    } else {
+      return $this->get_app_root($dir . "/..");
+    }
   }
   
   protected function exit_with_message($msg) {
