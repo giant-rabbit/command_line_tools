@@ -61,11 +61,16 @@ EOT;
     $db_latest = array_pop($db_array);
     $files_latest = array_pop($files_array);
     
-    $db_prompt = "Restore DB from file {$db_latest}?";
-    $should_restore_db_latest = \GR\Hash::fetch($this->opts,'no-prompts') ? true : $this->confirm($db_prompt);
+    $should_restore_db_latest = false;
+    if ($db_latest) {
+      $db_prompt = "Restore DB from file {$db_latest}?";
+      $should_restore_db_latest = \GR\Hash::fetch($this->opts,'no-prompts') ? true : $this->confirm($db_prompt);
+    } else {
+      $this->print_line("No database backup found. Looking for files that match *.mysql.gz");
+    }
     
     $should_restore_files_latest = false;
-    if (!\GR\Hash::fetch($this->opts,'exclude-files')) {
+    if ($files_latest && !\GR\Hash::fetch($this->opts,'exclude-files')) {
       $files_prompt = "Restore files from tarball {$files_latest}? This will remove everything that's currently in sites/default/files" ;
       $should_restore_files_latest = \GR\Hash::fetch($this->opts,'no-prompts') ? true : $this->confirm($files_prompt);
     }
@@ -195,7 +200,6 @@ EOT;
     $timestamp = date("U");
     $files_dest = str_replace('/','_',$files_tarball);
     $tmp_dest = "{$tmp_dir}/{$timestamp}_{$files_dest}";
-    $this->print_line($tmp_dest) ;
     \S3::getObject($bucket, $files_tarball, $tmp_dest);
     
     $this->print_line("  Deleting contents of sites/default/files...");
@@ -210,6 +214,7 @@ EOT;
     if (is_dir($unzipped)){
       \GR\Shell::command("mv {$unzipped}/files {$this->root_dir}/sites/default/");
       $this->print_line('done');
+      $this->print_line("\nYou may need to run `gr set-perms`");
     } else {
       $this->print_line('ERROR');
     }
