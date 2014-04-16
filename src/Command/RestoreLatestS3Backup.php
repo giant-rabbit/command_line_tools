@@ -8,11 +8,14 @@ class RestoreLatestS3Backup extends Command {
   const DESCRIPTION = "Overwrites a site's database and files directory using the most recent backup from an Amazon S3 bucket" ;
   const HELP_TEXT = <<<EOT
 
-Ideally, given the site name, this tool can find or make intelligent guesses
-about all of the values it needs to perform the backup. However, if you are
-setting up a copy of the site for the first time, or if it is in a non-standard
-directory structure, you may need to explicitly pass some or all of the site
-root and S3 credentials.
+  Ideally, given the site name, this tool can find or make intelligent guesses
+  about all of the values it needs to perform the backup. However, if you are
+  setting up a copy of the site for the first time, or if it is in a non-standard
+  directory structure, you may need to explicitly pass some or all of the site
+  root and S3 credentials.
+  
+  The tool will run `gr fix-definer` on the database dump before importing unless
+  passed the option --no-fix-definer.
 
 * Usage
   ---------
@@ -182,9 +185,20 @@ EOT;
     \GR\Shell::command("gunzip {$dest}");
     
     if (is_file($unzipped)) {
+      
+      $import_me = $unzipped;
+      $should_fix_definer = !\GR\Hash::fetch($this->opts,'no-fix-definer');
+      if ($should_fix_definer) {
+        $this->print_line("  Stripping DEFINER clauses from DB dump...");
+        $import_me = preg_replace("/\.mysql$/",".stripped.mysql",$unzipped);
+        $streams = \GR\Shell::command("gr fix-definer {$unzipped} > {$import_me}");
+        
+        if (!is_file($import_me)) { $this->exit_with_message("Error stripping definer"); }
+      }
+      
       echo "  Loading DB Dump...";
       $creds = $this->get_database_credentials();
-      $sql_import = "mysql -u {$creds['username']} -p{$creds['password']} {$creds['database']} < {$unzipped}";
+      $sql_import = "mysql -u {$creds['username']} -p{$creds['password']} {$creds['database']} < {$import_me}";
       \GR\Shell::command($sql_import);
       $this->print_line('done.');
       $this->print_line('');
@@ -208,7 +222,6 @@ EOT;
     echo "  Unzipping to sites/default/files...";
     $cmd = "tar -xvf {$tmp_dest} -C {$tmp_dir}";
     $unzipped = "{$tmp_dir}/" . basename($files_tarball,'.tar.gz');
-    $this->print_line($unzipped);
     $unzipped = str_replace('.tar.gz','',$unzipped);
     \GR\Shell::command($cmd, array('throw_exception_on_nonzero'=>true));
     if (is_dir($unzipped)){
@@ -256,6 +269,8 @@ EOT;
     $specs->add("i|id?",     "AWS Access Key ID") ;
     $specs->add("s|secret?", "AWS Secret Access Key") ;
     $specs->add("b|bucket?", "S3 Bucket from which to retrieve backup") ;
+    $specs->add("p|prefix?", "Prefix to search bucket");
+    $specs->add("no-fix-definer", "Don't run `gr fix-definer` on MySQL backup before importing");
     $specs->add("no-prompts", "Execute command with no confirmation prompts. Useful for running in automated processes.");
     $specs->add("exclude-files", "Don't restore files directories") ;
     
