@@ -269,7 +269,7 @@ EOT;
     $specs->add("i|id?",     "AWS Access Key ID") ;
     $specs->add("s|secret?", "AWS Secret Access Key") ;
     $specs->add("b|bucket?", "S3 Bucket from which to retrieve backup") ;
-    $specs->add("p|prefix?", "Prefix to search bucket");
+    $specs->add("p|prefix?", "Prefix to filter results in bucket");
     $specs->add("no-fix-definer", "Don't run `gr fix-definer` on MySQL backup before importing");
     $specs->add("no-prompts", "Execute command with no confirmation prompts. Useful for running in automated processes.");
     $specs->add("exclude-files", "Don't restore files directories") ;
