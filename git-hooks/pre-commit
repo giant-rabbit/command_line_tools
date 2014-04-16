@@ -2,7 +2,7 @@
 
 echo "\n[PRECOMMIT HOOK] Running tests"
 cd test
-phpunit .
+../vendor/bin/phpunit -c . .
 rslt=$?
 
 [ $rslt -ne 0 ] && printf "\n *** Some test are failing.\n *** If you're SURE you want to commit, run 'git commit --no-verify'\n\n" && exit 1

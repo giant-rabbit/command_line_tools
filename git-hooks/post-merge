@@ -2,5 +2,5 @@
 composer install
 cwd=$(pwd)
 cd test
-phpunit .
+../vendor/bin/phpunit -c . .
 cd $cwd
