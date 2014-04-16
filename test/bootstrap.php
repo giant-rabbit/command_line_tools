@@ -12,7 +12,7 @@ if (empty($config)) {
   $err  = "\nYou are missing or have misconfigured your config.json file, ";
   $err .= "\nwhich specifies your testing databases. Please see config.example.json ";
   $err .= "\nfor example usage\n\n";
-  $err .= "If this is not a development environment, you may disregard this message.";
+  $err .= "If this is not a development environment, you may disregard this message.\n\n";
   die($err);
 } else {
   write_config_files($config);
