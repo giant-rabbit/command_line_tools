@@ -7,15 +7,16 @@ $loader = require_once __DIR__ . '/../vendor/autoload.php' ;
 
 echo "* Reading config...\n";
 $config = json_decode(file_get_contents("./config.json"));
-write_config_files($config);
-
 
 if (empty($config)) {
   $err  = "\nYou are missing or have misconfigured your config.json file, ";
   $err .= "which specifies your testing databases. Please see config.example.json ";
   $err .= "for example usage\n\n";
   die($err);
+} else {
+  write_config_files($config);
 }
+
 
 echo "* Loading Drupal DB...";
 
