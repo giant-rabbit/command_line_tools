@@ -37,7 +37,9 @@ class AnonymizeDb extends Command {
   This tool will anonymize a database by changing all non-GR email addresses to
   the form <client-alias>+<uid>@giantrabbit.com. If run from a Drupal or WordPress
   root, it will attempt to connect to that database, or can be passed mysql
-  credentials to connect to an arbitrary database.
+  credentials to connect to an arbitrary database. In that case, you must also
+  specify a --type options (drupal or wordpress) to the command knows which tables
+  to anonymize.
   
   Safety Measures
   ---------------
@@ -71,6 +73,7 @@ EOT;
 
   public function __construct($opts=false,$args=false) {
     parent::__construct($opts,$args) ;
+    if (isset($opts['help'])) return true;
     
     $this->database = \GR\Hash::fetch($args,0);
     if (!isset($this->type)) {
@@ -337,16 +340,17 @@ EOT;
    * More info at https://github.com/c9s/php-GetOptionKit
    */
   public static function option_kit() {
+    $break = "\n" . str_repeat(' ',27); // use this to break descriptions into multiple lines
     $specs = Command::option_kit() ; // DO NOT DELETE THIS LINE
     
     $specs->add("clobber", "Disregard any safeguards and anonymize the given database.") ;
     $specs->add("n|no-backup", "Do not back up database before anonymizing") ;  //
     $specs->add("backup-to:", "Directory to put backup in. Defaults to PHP's sys_get_temp_dir()");
     
-    $specs->add("u|username:", "MySQL User. If run from a Drupal or Wordpress root, will attempt to retrieve this value from site config");
-    $specs->add("p|set-password", "Flag to spec password for MySQL. The tool will prompt for the password after command input");
-    $specs->add("host", "MySQL Host. Defaults to localhost, or if run from a Drupal or Wordpress root, will attempt to retrieve this value from site config");
-    $specs->add("t|type:", "Database Type [drupal|wordpress]. If not given, the tool makes an intelligent guess based on the your current directory.");
+    $specs->add("u|username:", "MySQL User.{$break}If run from a Drupal or Wordpress root, will attempt to retrieve{$break}this value from site config");
+    $specs->add("p|set-password", "Flag to spec password for MySQL.{$break}The tool will prompt for the password after command input");
+    $specs->add("host", "MySQL Host.{$break}Defaults to localhost, or if run from a Drupal or Wordpress root,{$break}will attempt to retrieve this value from site config");
+    $specs->add("t|type:", "Database Type [drupal|wordpress].{$break}If not given, the tool makes an intelligent guess{$break}based on the your current directory.");
     $specs->add("d|domain:", "Client's email domain");
     $specs->add("a|alias:", "Client's email alias or your email username (eg 'ecomod' or 'bwilhelm')");
     

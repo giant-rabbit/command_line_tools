@@ -64,6 +64,7 @@ EOT;
    */
   public function __construct($opts=false,$args=false) {
     parent::__construct($opts,$args) ;
+    if (isset($opts['help'])) return true;
   }
   
   
@@ -133,6 +134,7 @@ EOT;
    * More info at https://github.com/c9s/php-GetOptionKit
    */
   public static function option_kit() {
+    $break = "\n" . str_repeat(' ',27); // use this to break descriptions into multiple lines
     $specs = Command::option_kit() ; // DO NOT DELETE THIS LINE
     
     // replace this area with your own options --------------++    
