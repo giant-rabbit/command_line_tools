@@ -1,5 +1,6 @@
 #!/bin/bash
 composer install
+composer update giant-rabbit/php-util
 cwd=$(pwd)
 cd test
 ../vendor/bin/phpunit -c . .
