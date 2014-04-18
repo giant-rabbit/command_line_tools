@@ -38,7 +38,7 @@ class AnonymizeDb extends Command {
   the form <client-alias>+<uid>@giantrabbit.com. If run from a Drupal or WordPress
   root, it will attempt to connect to that database, or can be passed mysql
   credentials to connect to an arbitrary database. In that case, you must also
-  specify a --type options (drupal or wordpress) to the command knows which tables
+  specify a --type option (drupal or wordpress) so the command knows which tables
   to anonymize.
   
   Safety Measures
