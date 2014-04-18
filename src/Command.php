@@ -4,15 +4,17 @@ namespace GR ;
 
 class Command {
 
-  protected $working_directory ;
+  protected $working_directory;
   
   public function __construct($opts=false,$args=false) {
     $className = get_class($this) ;
     $this->optionKit = $className::option_kit() ;
     $this->opts = $opts ? $opts : array() ;
     $this->args = $args ? $args : array() ;
-    $this->working_directory = $this->get_cli_dir() ;   
+    $this->working_directory = $this->get_cli_dir() ;
+    $this->environment = detectEnvironment($this->working_directory);
     $this->app_root = $this->get_app_root();
+    $this->assign_options();
   }
 
   public function run() {
@@ -49,6 +51,32 @@ class Command {
     echo "  ------------------------------\n" ;
     $this->optionKit->specs->printOptions() ;
     echo "\n\n" ;
+  }
+  
+  protected function assign_options() {
+    foreach ($this->opts as $key=>$val) {
+      $key = str_replace('-','_',$key);
+      if (isset($this->{$key})) {
+        throw new \Exception("Cannot use '{$key}' as option name for class " . get_class($this) . ". Already in use as a property name.");
+      }
+      
+      $this->{$key} = $val;
+    }
+  }
+  
+  protected function validate_arguments() {
+    $req = $this->required_arguments;
+    $missing = array();
+    foreach ($req as $prop) {
+      if (!$this->{$prop}) {
+        $missing[] = $prop;
+      }
+    }
+    
+    if (!empty($missing)) {
+      $string = implode(', ',$missing);
+      throw new \Exception("Missing options or arguments: {$string}");
+    }
   }
   
   protected function get_app_root($dir=false) {
@@ -93,6 +121,14 @@ class Command {
       } 
     } 
     return $input; 
+  }
+  
+  protected function prompt_hidden($prompt) {
+    system('stty -echo');
+    $ret = $this->prompt($prompt, false);
+    system('stty echo');
+    echo "\n";
+    return $ret;
   }
 
   /**

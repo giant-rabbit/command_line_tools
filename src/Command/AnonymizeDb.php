@@ -55,12 +55,38 @@ class AnonymizeDb extends Command {
 EOT;
 
 
-  protected $database_name;
   protected $database_connection;
+  protected $database;
+  protected $username;
+  protected $password;
+  protected $host;
+  protected $required_arguments = array(
+    'database',
+    'username',
+    'password',
+    'host',
+    'domain',
+    'alias'
+  );
 
   public function __construct($opts=false,$args=false) {
     parent::__construct($opts,$args) ;
-    $this->database_name = $args[0];
+    
+    $this->database = \GR\Hash::fetch($args,0);
+    if (!isset($this->type)) {
+      $this->type = $this->environment;
+      if (!$this->type) {
+        throw new \GR\Exception\MissingEnvironmentException("Database Type (--type [drupal|wordpress]) not specified and could not be determined");
+      }
+    } else {
+      $this->type = strtolower($this->type);
+    }
+    
+    if (\GR\Hash::fetch($opts,'set-password')) {
+      $this->password = $this->prompt_hidden("Password:");
+    }
+    
+    $this->get_options_from_environment();
   }
   
   
@@ -77,32 +103,29 @@ EOT;
   public function run() {
     // keep this line
     if (!parent::run()) { return false ; }
-
-    if (!$this->check_database_name()) {
-      $msg =  "! The database name {$this->database_name} looks like a production database." ;
-      $msg .= "\n  If you're REALLY SURE you want to anonymize it, you can run this command";
-      $msg .= "\n  with the --clobber option.";
-      $this->exit_with_message($msg);
+    
+    $this->validate_arguments();
+    $this->verify_database_with_user();
+    
+    if (!isset($this->no_backup) || !$this->no_backup) {
+      $this->backup_database();
+    } else {
+      $this->print_line("* Skipping database backup...");
     }
     
-    if ($this->check_database_name() === 'CONFIRM') {
-      $prompt =  "\n! I can't tell for sure that {$this->database_name} is a non-production database.";
-      $prompt .= "\n  If you're sure you want to anonymize it, please type the database name again.";
-      $prompt .= "\n  Otherwise, simply press <return> to abort";
-      $prompt .= "\n\nConfirm Database Name: ";
-      $db_conf = $this->prompt($prompt,null);
-      
-      if ($db_conf != $this->database_name) {
-        $this->exit_with_message("bye");
-      }
-    }
+    $this->connect_to_database();
+    $this->anonymize_database();
     
-    $this->print_line("Anonymizing database (not really)");
+    $this->print_line("\ndone.");
   }
   
   
   public function check_database_name() {
-    $db_name = strtolower($this->database_name);
+    if (isset($this->clobber) && $this->clobber) {
+      return 'OK';
+    }
+    
+    $db_name = strtolower($this->database);
     
     if (strpos($db_name, 'prod') !== false) {
       return false;
@@ -116,10 +139,177 @@ EOT;
     return 'OK';
   }
   
-  public function get_database_name() {
-    return $this->database_name;
+  public function get_database() {
+    return $this->database;
   }
   
+  public function get_host() {
+    return $this->host;
+  }
+  
+  public function get_username() {
+    return $this->username;
+  }
+  
+  public function get_password() {
+    return $this->password;
+  }
+  
+  
+  
+  protected function anonymize_database() {
+    switch($this->type) {
+      case 'drupal':
+        $this->anonymize_drupal_database();
+        break;
+      
+      case 'wordpress':
+        $this->anonymize_wordpress_database();
+        break;
+      
+      default:
+        throw new \Exception("Invalid database type {$this->type}. Must be either 'drupal' or 'wordpress'");
+    }
+  }
+  
+  protected function anonymize_drupal_database() {
+    $dbc = $this->database_connection;
+    $this->print_line("\n* Anonymizing Drupal `users` table");
+    $qry =  "UPDATE users SET mail=CONCAT('{$this->alias}', '+', uid, '@giantrabbit.com') ";
+    $qry .= "WHERE mail NOT LIKE '%@giantrabbit.com' AND mail NOT LIKE CONCAT('%@','{$this->domain}')";
+    $this->print_line("  {$qry}");
+    $stmt = $dbc->prepare($qry);
+    $stmt->execute();
+
+    $this->anonymize_civi_tables_if_present();
+  }
+  
+  protected function anonymize_wordpress_database() {
+    $dbc = $this->database_connection;
+    
+    $tbl_qry = "SHOW TABLES LIKE '%_users'";
+    $this->print_line($tbl_qry);
+    $tbl_stmt = $dbc->prepare($tbl_qry);
+    $tbl_stmt->execute();
+    
+    $rows = $tbl_stmt->fetchAll(\PDO::FETCH_NUM);
+
+    foreach ($rows as $row) {
+      $tbl_name = $row[0];
+      if ($tbl_name) {
+        $this->print_line("\n* Anonymizing WordPress table {$tbl_name}");
+        $qry =  "UPDATE {$tbl_name} SET user_email=CONCAT('{$this->alias}', '+', ID, '@giantrabbit.com') ";
+        $qry .= "WHERE user_email NOT LIKE '%@giantrabbit.com' AND user_email NOT LIKE CONCAT('%@','{$this->domain}')";
+        $stmt = $dbc->prepare($qry);
+        $stmt->execute();
+      } else {
+        $this->exit_with_message("Could not determine table name for users table");
+      }
+    }
+
+    $this->anonymize_civi_tables_if_present();
+  }
+  
+  protected function anonymize_civi_tables_if_present() {
+    $dbc = $this->database_connection;
+    $check_qry = "SHOW TABLES LIKE 'civicrm_email'";
+    $check_stmt = $dbc->prepare($check_qry);
+    $check_stmt->execute();
+    
+    if ($check_stmt->fetch()) {
+      $this->print_line("\n* Anonymizing civicrm_email table");
+      $qry =  "UPDATE civicrm_email ";
+      $qry .= "SET email = CONCAT('{$this->alias}','+',contact_id,'@giantrabbit.com') ";
+      $qry .= "WHERE email NOT LIKE '%@giantrabbit.com' AND email NOT LIKE CONCAT('%@', '{$this->domain}')";
+      $this->print_line("  {$qry}");
+      $stmt = $dbc->prepare($qry);
+      $stmt->execute();
+    }
+  }
+  
+  protected function backup_database() {
+    if (isset($this->backup_to)) {
+      $backup_to = realpath($this->backup_to);
+      if (is_dir($this->backup_to)) {
+        $backup_location = $this->backup_to . "/" . $this->database . "_" . date("U") . ".sql";
+      } else {
+        $backup_location = $this->backup_to;
+      }
+    } else {
+      $backup_location = $this->get_tmp_backup_location();
+    }
+    
+    $this->print_line("* Backing up database {$this->database} to {$backup_location}");
+    $cmd = "mysqldump -u {$this->username} -p{$this->password} -h {$this->host} {$this->database} > {$backup_location}";
+    $streams = \GR\Shell::command($cmd);
+    $this->print_line($streams[0]);
+  }
+  
+  protected function get_tmp_backup_location() {
+    $tmp = sys_get_temp_dir();
+    $db = $this->database;
+    $ts = date("U");
+    $loc = "{$tmp}/{$db}_{$ts}.sql";
+    
+    return $loc;
+  }
+  
+  protected function validate_arguments() {
+    parent::validate_arguments();
+    if (isset($this->opts['type'])
+    &&  strtolower($this->opts['type']) != 'drupal'
+    &&  strtolower($this->opts['type']) != 'wordpress') {
+      throw new \GR\Exception\InvalidArgumentException("--type takes only 'drupal' or 'wordpress' as its values");
+    }
+  }
+  
+  protected function connect_to_database() {
+    $this->print_line("* Connecting to database {$this->database} as user {$this->username}@{$this->host}");
+    $dbn = "mysql:host={$this->host};dbname={$this->database}";
+    $dbc = new \PDO($dbn,$this->username,$this->password);
+    $dbc->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+    $this->database_connection = $dbc;
+  }
+  
+  protected function get_options_from_environment() {
+    $creds = false;
+    if ($this->environment == 'drupal') {
+      $creds = \GR\Drupal::get_database_credentials($this->working_directory);
+    } elseif ($this->environment == 'wordpress') {
+      $creds = \GR\Wordpress::get_database_credentials($this->working_directory);
+    }
+    
+    if ($creds) {
+      foreach ($creds as $key => $value) {
+        if (!isset($this->{$key})) $this->{$key} = $value ;
+      }
+    }
+    
+    if (!isset($this->host)) $this->host = 'localhost' ;
+  }
+  
+  protected function verify_database_with_user() {
+    if (!$this->check_database_name()) {
+      $msg =  "! The database name {$this->database} looks like a production database." ;
+      $msg .= "\n  If you're REALLY SURE you want to anonymize it, you can run this command";
+      $msg .= "\n  with the --clobber option.";
+      $this->exit_with_message($msg);
+    }
+    
+    if ($this->check_database_name() === 'CONFIRM') {
+      $prompt =  "\n! I can't tell for sure that {$this->database} is a non-production database.";
+      $prompt .= "\n  If you're sure you want to anonymize it, please type the database name again.";
+      $prompt .= "\n  Otherwise, simply press <return> to abort";
+      $prompt .= "\n\nConfirm Database Name: ";
+      $db_conf = $this->prompt($prompt,null);
+      
+      if (!$db_conf || $db_conf != $this->database) {
+        $this->exit_with_message("bye");
+      }
+    }
+  }
+  
+
   /**
    * Returns the available options for your command
    *
@@ -153,9 +343,12 @@ EOT;
     $specs->add("n|no-backup", "Do not back up database before anonymizing") ;  //
     $specs->add("backup-to:", "Directory to put backup in. Defaults to PHP's sys_get_temp_dir()");
     
-    $specs->add("u|user:", "MySQL User. If run from a Drupal or Wordpress root, will attempt to retrieve this value from site config");
-    $specs->add("p|password", "Flag to spec password for MySQL. The tool will prompt for the password after command input");
+    $specs->add("u|username:", "MySQL User. If run from a Drupal or Wordpress root, will attempt to retrieve this value from site config");
+    $specs->add("p|set-password", "Flag to spec password for MySQL. The tool will prompt for the password after command input");
     $specs->add("host", "MySQL Host. Defaults to localhost, or if run from a Drupal or Wordpress root, will attempt to retrieve this value from site config");
+    $specs->add("t|type:", "Database Type [drupal|wordpress]. If not given, the tool makes an intelligent guess based on the your current directory.");
+    $specs->add("d|domain:", "Client's email domain");
+    $specs->add("a|alias:", "Client's email alias or your email username (eg 'ecomod' or 'bwilhelm')");
     
     //-------------------------------------------------------++
     
