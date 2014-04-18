@@ -18,15 +18,16 @@ if (empty($config)) {
   write_config_files($config);
 }
 
-
-echo "* Loading Drupal DB...";
-
-$cnf = $config->databases->drupal ;
-$cmd = "mysql -u {$cnf->username} -p{$cnf->password} {$cnf->database} < ./files/sql/drupal.sql";
-$s = \GR\Shell::command($cmd);
-echo $s[0];
-echo "done.\n\n";
-
+if (!getenv("GR_SKIP_DB")) {
+  echo "* Loading Drupal DB...";
+  $cnf = $config->databases->drupal ;
+  $cmd = "mysql -u {$cnf->username} -p{$cnf->password} {$cnf->database} < ./files/sql/drupal.sql";
+  $s = \GR\Shell::command($cmd);
+  echo $s[0];
+  echo "done.\n\n";
+} else {
+  echo "* Skipping DB Setup...\n\n";
+}
 
 
 
