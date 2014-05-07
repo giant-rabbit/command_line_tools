@@ -118,7 +118,9 @@ EOT;
   public function get_database_connection() {
     $creds = $this->get_database_credentials();
     $dbn = "mysql:host={$creds['host']};dbname={$creds['database']}";
-    return new \PDO($dbn,$creds['username'],$creds['password']);
+    $pdo = new \PDO($dbn,$creds['username'],$creds['password']);
+    $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+    return $pdo;
   }
   
   public function fetch_aws_credentials() {
