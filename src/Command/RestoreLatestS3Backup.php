@@ -200,7 +200,7 @@ EOT;
       
       echo "  Loading DB Dump...";
       $creds = $this->get_database_credentials();
-      $sql_import = "mysql -u {$creds['username']} -p{$creds['password']} {$creds['database']} < {$import_me}";
+      $sql_import = "mysql -u {$creds['username']} -p{$creds['password']} -h{$creds['host']} {$creds['database']} < {$import_me}";
       \GR\Shell::command($sql_import);
       $this->print_line('done.');
       $this->print_line('');
