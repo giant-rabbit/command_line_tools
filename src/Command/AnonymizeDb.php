@@ -349,7 +349,7 @@ EOT;
     
     $specs->add("u|username:", "MySQL User.{$break}If run from a Drupal or Wordpress root, will attempt to retrieve{$break}this value from site config");
     $specs->add("p|set-password", "Flag to spec password for MySQL.{$break}The tool will prompt for the password after command input");
-    $specs->add("host", "MySQL Host.{$break}Defaults to localhost, or if run from a Drupal or Wordpress root,{$break}will attempt to retrieve this value from site config");
+    $specs->add("host:", "MySQL Host.{$break}Defaults to localhost, or if run from a Drupal or Wordpress root,{$break}will attempt to retrieve this value from site config");
     $specs->add("t|type:", "Database Type [drupal|wordpress].{$break}If not given, the tool makes an intelligent guess{$break}based on the your current directory.");
     $specs->add("d|domain:", "Client's email domain");
     $specs->add("a|alias:", "Client's email alias or your email username{$break}(eg 'ecomod' or 'bwilhelm')");
