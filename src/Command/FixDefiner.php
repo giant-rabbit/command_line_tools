@@ -6,29 +6,43 @@ use GR\Command as Command ;
 
 class FixDefiner extends Command {
 
-  const DESCRIPTION = "Given a raw SQL dump from a CiviCRM-enabled site, this command strips out the definer clause and outputs the result." ;
+  const DESCRIPTION = "Given an SQL dump from a CiviCRM-enabled site, this command strips out the definer clause and outputs the result." ;
 
   const HELP_TEXT = <<<EOT
 
-Usage: gr fix-definer /path/to/raw.sql > /path/to/destination.sql
+Usage: gr fix-definer /path/to/sql_or_gzip_file
 
-This command takes the input file, strips out the definer clause, and outputs the result to STDOUT.
+This command takes the input file, strips out the definer clause, and
+outputs the result to the file with -definer-fixed appended to the name
+of the file.
 
 Arguments: path to input file
-Options: none.
+Options:
+  --output /path/to/output_file
+
+You can output to stdout by passing php://stdout to --output.
 
 EOT;
 
-  
+  static $expected_extensions = array
+  (
+    '.sql',
+    '.sql.gz',
+  );
+
   public function __construct($opts,$args) {
     parent::__construct($opts,$args) ;
     
-    $input_file = \GR\Hash::fetch($args,0) ;
-    if (!$input_file && !$opts['help']) {
+    $input_file_name = \GR\Hash::fetch($args,0) ;
+    if (!$input_file_name && !$opts['help']) {
       throw new \Exception("This command takes one argument - the path to the file to be stripped.");
     }
     
-    $this->input_file = $input_file ;
+    $this->input_file_name = $input_file_name;
+    $this->output_file_name = NULL;
+    if (isset($this->opts['output'])) {
+      $this->output_file_name = $this->opts['output'];
+    }
   }
   
   
@@ -45,22 +59,90 @@ EOT;
   public function run() {
     // keep this line
     if (!parent::run()) { return false ; }
-    
-    $this->file_get_contents_chunked($this->input_file, 4096, function ($chunk, &$handle, $iteration){
+
+    $dir_name = NULL;
+    $base_file_name = NULL; 
+    $extension = NULL;
+    $use_gzip = FALSE;
+    foreach (static::$expected_extensions as $expected_extension) {
+      $regex = str_replace('.', '\.', $expected_extension);
+      if (preg_match("/$regex$/", $this->input_file_name)) {
+        $base_name = basename($this->input_file_name, $expected_extension);
+        $dir_name = dirname($this->input_file_name);
+        $extension = $expected_extension;
+        break;
+      }
+    }
+    if ($base_name === NULL) {
+      $base_name = basename($this->input_file_name);
+      $dir_name = dirname($this->input_file_name);
+    }
+    if (preg_match("/\\.gz$/", $extension)) {
+      $use_gzip = TRUE;
+    }
+    if ($this->output_file_name == NULL) {
+      $this->output_file_name = "$base_name-definer-fixed$extension";
+    }
+    if ($use_gzip) {
+      $this->input_file = gzopen($this->input_file_name, 'r');
+      if ($this->input_file === FALSE) {
+        $this->throw_last_error("Error opening input file {$this->input_file_name}");
+      }
+      $this->output_file = gzopen($this->output_file_name, 'w');
+      if ($this->output_file === FALSE) {
+        $this->throw_last_error("Error openeing output file {$this->output_file_name}");
+      }
+    } else {
+      $this->input_file = fopen($this->input_file_name, 'r');
+      if ($this->input_file === FALSE) {
+        $this->throw_last_error("Error opening input file {$this->input_file_name}");
+      }
+      $this->output_file = fopen($this->output_file_name, 'w');
+      if ($this->output_file === FALSE) {
+        $this->throw_last_error("Error opening output file {$this->output_file_name}");
+      }
+    }
+
+    $this->file_get_contents_chunked(4096, function ($chunk, $iteration){
       $regex = '/\/\*[^*]*DEFINER=[^*]*\*\//';
-      echo preg_replace($regex, '', $chunk) ;
+      $result = fwrite($this->output_file, preg_replace($regex, '', $chunk));
+      if ($result === FALSE) {
+        $this->throw_last_error("Error writing to output file {$this->output_file_name}");
+      }
     });
+
+    if ($use_gzip) {
+      $result = gzclose($this->input_file);
+      if ($result === FALSE) {
+        $this->throw_last_error("Error closing input file {$this->input_file_name}");
+      }
+      $result = gzclose($this->output_file);
+      if ($result === FALSE) {
+        $this->throw_last_error("Error closing input file {$this->input_file_name}");
+      }
+    } else {
+      $result = fclose($this->input_file);
+      if ($result === FALSE) {
+        $this->throw_last_error("Error closing input file {$this->input_file_name}");
+      }
+      $result = fclose($this->output_file);
+      if ($result === FALSE) {
+        $this->throw_last_error("Error closing input file {$this->input_file_name}");
+      }
+    }
   }
   
-  protected function file_get_contents_chunked($file, $chunk_size, $callback) {
+  protected function file_get_contents_chunked($chunk_size, $callback) {
     
-    $handle = fopen($file,'r');
     $i = 0;
-    while (!feof($handle)){
-      call_user_func_array($callback, array(fread($handle, $chunk_size), &$handle, $i));
+    while (!feof($this->input_file)){
+      $data = fread($this->input_file, $chunk_size);
+      if ($data === FALSE) {
+        $this->throw_last_error("Error reading from input file {$this->input_file_name}");
+      }
+      call_user_func_array($callback, array($data, $i));
       $i++;
     }
-    fclose($handle);
   }
   
   /**
@@ -91,7 +173,12 @@ EOT;
    */
   public static function option_kit() {
     $specs = Command::option_kit() ; // DO NOT DELETE THIS LINE
-    // no options yet...
+    $specs->add("o|output:", "Output to this file name or - for stdout");
     return $specs ; // DO NOT DELETE
+  }
+
+  public function throw_last_error($message) {
+    $error_info = error_get_last();
+    throw new Exception("$message: " . print_r($error_info, TRUE));
   }
 }

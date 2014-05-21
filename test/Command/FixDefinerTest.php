@@ -18,19 +18,44 @@ class FixDefinerTest extends GR\TestCase\TestCase {
   protected function setup() {
     $this->gr = new \GR\GR() ;
   }
+
+  static $expected_contents = <<<EOS
+/*!50003 CREATE*/  /*!50003 TRIGGER civicrm_website_after_insert after insert ON civicrm_website FOR EACH ROW BEGIN
+/*!50003 CREATE*/  /*!50003 TRIGGER civicrm_website_after_insert after insert ON civicrm_website FOR EACH ROW BEGIN
+EOS;
   
   /**
    * Test names must be in the form `testWhatever`. That is, lowercase `test`
    * followed by CamelCase descriptor, often the name of the method being tested.
    */
   public function testFixDefinerOutput() {
-    $expected_result = "/*!50003 CREATE*/  /*!50003 TRIGGER civicrm_website_after_insert after insert ON civicrm_website FOR EACH ROW BEGIN";
-    $expected_result .= "\n/*!50003 CREATE*/  /*!50003 TRIGGER civicrm_website_after_insert after insert ON civicrm_website FOR EACH ROW BEGIN";
     chdir($this->misc_root) ;
+    @unlink('fix-definer-definer-fixed.sql');
     $cmd = "gr fix-definer fix-definer.sql" ;
-    $streams = \GR\Shell::command($cmd, array('throw_exception_on_nonzero'=>false)) ;
-    $result = $streams[0] ;
-    $this->assertEquals($expected_result, $result) ;
+    \GR\Shell::command($cmd);
+    $this->assertFileExists('fix-definer-definer-fixed.sql');
+    $contents = file_get_contents('fix-definer-definer-fixed.sql');
+    $this->assertEquals(static::$expected_contents, $contents);
+  }
+
+  public function testFixDefinerGzip() {
+    chdir($this->misc_root) ;
+    @unlink('fix-definer-definer-fixed.sql');
+    @unlink('fix-definer-definer-fixed.sql.gz');
+    $cmd = "gr fix-definer fix-definer.sql.gz" ;
+    \GR\Shell::command($cmd);
+    $this->assertFileExists('fix-definer-definer-fixed.sql.gz');
+    \GR\Shell::command("gunzip fix-definer-definer-fixed.sql.gz");
+    $contents = file_get_contents('fix-definer-definer-fixed.sql');
+    $this->assertEquals(static::$expected_contents, $contents);
+  }
+
+  public function testOutputOption() {
+    chdir($this->misc_root) ;
+    @unlink('fix-definer-different-output.sql');
+    $cmd = "gr fix-definer --output fix-definer-different-output.sql fix-definer.sql" ;
+    \GR\Shell::command($cmd);
+    $this->assertFileExists('fix-definer-different-output.sql');
   }
   
 }
