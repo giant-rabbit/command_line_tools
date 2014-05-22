@@ -180,33 +180,24 @@ EOT;
     $timestamp = date("U");
     $db_dest = str_replace('/','_',$db_dump);
     $dest = "{$tmp_dir}/{$timestamp}_{$db_dest}";
-    $unzipped = preg_replace('/\.gz$/','',$dest);
     \S3::getObject($bucket, $db_dump, $dest);
-    
-    $this->print_line("  Unzipping DB Dump...");
-    \GR\Shell::command("gunzip {$dest}");
-    
-    if (is_file($unzipped)) {
-      
-      $import_me = $unzipped;
-      $should_fix_definer = !\GR\Hash::fetch($this->opts,'no-fix-definer');
-      if ($should_fix_definer) {
-        $this->print_line("  Stripping DEFINER clauses from DB dump...");
-        $import_me = preg_replace("/\.mysql$/",".stripped.mysql",$unzipped);
-        $streams = \GR\Shell::command("gr fix-definer {$unzipped} > {$import_me}");
-        
-        if (!is_file($import_me)) { $this->exit_with_message("Error stripping definer"); }
+
+    $should_fix_definer = !\GR\Hash::fetch($this->opts,'no-fix-definer');
+    if ($should_fix_definer) {
+      $this->print_line("  Stripping DEFINER clauses from DB dump...");
+      $import_me = preg_replace("/\.mysql.gz$/",".stripped.mysql.gz", $dest);
+      \GR\Shell::command("gr fix-definer --output '{$import_me}' '{$dest}'");
+      if (!is_file($import_me)) {
+        $this->exit_with_message("Error stripping definer");
       }
-      
-      echo "  Loading DB Dump...";
-      $creds = $this->get_database_credentials();
-      $sql_import = "mysql -u {$creds['username']} -p{$creds['password']} -h{$creds['host']} {$creds['database']} < {$import_me}";
-      \GR\Shell::command($sql_import);
-      $this->print_line('done.');
-      $this->print_line('');
-    } else {
-      $this->exit_with_message("Error unzipping {$dest}");
     }
+
+    $this->print_line("  Loading DB Dump...");
+    $creds = $this->get_database_credentials();
+    $sql_import = "gunzip -c {$import_me} | mysql -u {$creds['username']} -p{$creds['password']} -h{$creds['host']} {$creds['database']}";
+    \GR\Shell::command($sql_import);
+    $this->print_line('done.');
+    $this->print_line('');
   }
   
   public function restore_files($files_tarball) {

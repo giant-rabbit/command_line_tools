@@ -26,7 +26,9 @@ EOT;
 
   static $expected_extensions = array
   (
+    '.mysql',
     '.sql',
+    '.mysql.gz',
     '.sql.gz',
   );
 
@@ -77,7 +79,7 @@ EOT;
       $base_name = basename($this->input_file_name);
       $dir_name = dirname($this->input_file_name);
     }
-    if (preg_match("/\\.gz$/", $extension)) {
+    if (preg_match("/.*\\.gz$/", $extension)) {
       $use_gzip = TRUE;
     }
     if ($this->output_file_name == NULL) {
