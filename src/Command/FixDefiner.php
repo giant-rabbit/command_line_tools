@@ -17,11 +17,6 @@ outputs the result to the file with -definer-fixed appended to the name
 of the file.
 
 Arguments: path to input file
-Options:
-  --output /path/to/output_file
-
-You can output to stdout by passing php://stdout to --output.
-
 EOT;
 
   static $expected_extensions = array
@@ -175,7 +170,7 @@ EOT;
    */
   public static function option_kit() {
     $specs = Command::option_kit() ; // DO NOT DELETE THIS LINE
-    $specs->add("o|output:", "Output to this file name or - for stdout");
+    $specs->add("o|output:", "Output to this file name or php://stdout for stdout");
     return $specs ; // DO NOT DELETE
   }
 
