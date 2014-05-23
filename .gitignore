@@ -2,5 +2,6 @@ vendor/*
 test/config.json
 test/files/drupal/sites/default/settings.php
 test/files/misc/fix-definer-definer-fixed.sql
+test/files/misc/fix-definer-definer-fixed.sql.gz
 test/files/misc/fix-definer-different-output.sql
 test/files/wordpress/wp-config.php
