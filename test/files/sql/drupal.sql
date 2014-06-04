@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.6.15, for osx10.6 (x86_64)
+-- MySQL dump 10.13  Distrib 5.6.14, for osx10.6 (x86_64)
 --
--- Host: localhost    Database: gr_ace
+-- Host: localhost    Database: gr_clt_test_drupal
 -- ------------------------------------------------------
--- Server version	5.6.15
+-- Server version	5.6.14
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -119,6 +119,7 @@ CREATE TABLE `backup_migrate_profiles` (
 
 LOCK TABLES `backup_migrate_profiles` WRITE;
 /*!40000 ALTER TABLE `backup_migrate_profiles` DISABLE KEYS */;
+INSERT INTO `backup_migrate_profiles` VALUES ('b03d36f4fcfc5fd4ad549e6530dce533','Database and File Backup','[site:name]',1,'Y-m-d\\TH-i-s','a:9:{s:11:\"compression\";s:4:\"gzip\";s:21:\"notify_success_enable\";i:0;s:20:\"notify_success_email\";s:24:\"bwilhelm@giantrabbit.com\";s:21:\"notify_failure_enable\";i:1;s:20:\"notify_failure_email\";s:19:\"ace@giantrabbit.com\";s:18:\"utils_site_offline\";i:0;s:26:\"utils_site_offline_message\";s:118:\"Alliance for Climate Education is currently under maintenance. We should be back shortly. Thank you for your patience.\";s:17:\"utils_description\";s:0:\"\";s:12:\"destinations\";a:2:{s:2:\"db\";a:4:{s:14:\"exclude_tables\";a:0:{}s:13:\"nodata_tables\";a:19:{s:5:\"cache\";s:5:\"cache\";s:16:\"cache_admin_menu\";s:16:\"cache_admin_menu\";s:11:\"cache_block\";s:11:\"cache_block\";s:15:\"cache_bootstrap\";s:15:\"cache_bootstrap\";s:11:\"cache_field\";s:11:\"cache_field\";s:12:\"cache_filter\";s:12:\"cache_filter\";s:10:\"cache_form\";s:10:\"cache_form\";s:11:\"cache_image\";s:11:\"cache_image\";s:10:\"cache_menu\";s:10:\"cache_menu\";s:10:\"cache_page\";s:10:\"cache_page\";s:10:\"cache_path\";s:10:\"cache_path\";s:12:\"cache_update\";s:12:\"cache_update\";s:11:\"cache_views\";s:11:\"cache_views\";s:16:\"cache_views_data\";s:16:\"cache_views_data\";s:14:\"search_dataset\";s:14:\"search_dataset\";s:12:\"search_index\";s:12:\"search_index\";s:12:\"search_total\";s:12:\"search_total\";s:8:\"sessions\";s:8:\"sessions\";s:8:\"watchdog\";s:8:\"watchdog\";}s:17:\"utils_lock_tables\";i:0;s:13:\"use_mysqldump\";i:1;}s:5:\"files\";a:1:{s:17:\"exclude_filepaths\";s:39:\"backup_migrate\r\nstyles\r\ncss\r\njs\r\nctools\";}}}');
 /*!40000 ALTER TABLE `backup_migrate_profiles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -149,6 +150,7 @@ CREATE TABLE `backup_migrate_schedules` (
 
 LOCK TABLES `backup_migrate_schedules` WRITE;
 /*!40000 ALTER TABLE `backup_migrate_schedules` DISABLE KEYS */;
+INSERT INTO `backup_migrate_schedules` VALUES ('c1774c2db433ed2b4ed35df3fa147028','Daily Backup - Database','db','6ebdcf83baeccf30c521590ade86902a','b03d36f4fcfc5fd4ad549e6530dce533',28,86400,1,0),('e12a87ddeb6b17277bdb1e37ceef30c2','Daily Backup - Files','files','6ebdcf83baeccf30c521590ade86902a','b03d36f4fcfc5fd4ad549e6530dce533',28,86400,1,0);
 /*!40000 ALTER TABLE `backup_migrate_schedules` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2690,4 +2692,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-03-06 18:07:29
+-- Dump completed on 2014-06-04 16:20:51

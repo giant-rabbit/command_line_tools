@@ -145,4 +145,15 @@ class RestoreLatestS3BackupTest extends GR\TestCase\TestCase {
     $cmd->expects($this->exactly(0))->method('restore_files');
     $cmd->run();
   }
+  
+  public function testDisableBackupMigrateSchedules() {
+    chdir($this->drupal_root);
+    $cmd = new \GR\Command\RestoreLatestS3Backup();
+    $cmd->disable_backup_migrate_schedules();
+    $dbc = $cmd->get_database_connection();
+    $sql = "SELECT * FROM backup_migrate_schedules";
+    foreach ($dbc->query($sql) as $row) {
+      $this->assertEquals(0, $row['enabled']);
+    }
+  }  
 }

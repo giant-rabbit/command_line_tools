@@ -196,6 +196,12 @@ EOT;
     $creds = $this->get_database_credentials();
     $sql_import = "gunzip -c {$import_me} | mysql -u {$creds['username']} -p{$creds['password']} -h{$creds['host']} {$creds['database']}";
     \GR\Shell::command($sql_import);
+    
+    if (!isset($this->opts['keep-schedules']) || !$this->opts['keep-schedules']) {
+      $this->print_line("  Disabling Backup and Migrate Schedules...");
+      $this->disable_backup_migrate_schedules();
+    }
+
     $this->print_line('done.');
     $this->print_line('');
   }
@@ -228,6 +234,9 @@ EOT;
     $this->print_line('');
   }
   
+  public function disable_backup_migrate_schedules() {
+    return $this->pdo->exec("UPDATE backup_migrate_schedules SET enabled=0");
+  }
   
   /**
    * Returns the available options for your command
@@ -266,6 +275,7 @@ EOT;
     $specs->add("no-fix-definer", "Don't run `gr fix-definer` on MySQL backup before importing");
     $specs->add("no-prompts", "Execute command with no confirmation prompts. Useful for running in automated processes.");
     $specs->add("exclude-files", "Don't restore files directories") ;
+    $specs->add('keep-schedules', "Don't disable Backup and Migrate schedules after restoring database");
     
     return $specs ; // DO NOT DELETE
   }
