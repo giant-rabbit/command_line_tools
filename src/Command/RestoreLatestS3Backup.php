@@ -126,28 +126,40 @@ EOT;
   public function fetch_aws_credentials() {
     $env = $this->get_environment() ;
     if ('drupal' === $env) {
-      $qry = $this->pdo->query("SELECT * FROM backup_migrate_destinations WHERE type='S3'") ;
-      
-      if ($qry->rowCount() === 1) {
-        $row = $qry->fetch() ;
-        $url = $row['location'] ;
-        $creds = $this->parse_aws_url($url) ;
-        
-        if (!isset($this->opts['id'])) { $this->opts['id'] = $creds['id'] ; }
-        if (!isset($this->opts['secret'])) { $this->opts['secret'] = $creds['secret'] ; }
-        if (!isset($this->opts['bucket'])) { $this->opts['bucket'] = $creds['bucket'] ; }
-        if (!isset($this->opts['prefix'])) { $this->opts['prefix'] = $creds['prefix'] ; }
-        return true ;
-      }
-
-      if (!$qry->rowCount())    { $this->exit_with_message("No S3 locations found in database. Please try again and specify id, secret, and bucket."); }
-      if ($qry->rowCount() > 1) { $this->exit_with_message("Multiple S3 locations found in database. Please try again and specify bucket"); }
-      
-      return false ;
+      return $this->fetch_aws_credentials_drupal();
     } elseif ('wordpress' === $env) {
       $this->exit_with_message("WORDPRESS NOT YET SUPPORTED") ;
       exit ;
     }
+    
+    throw new \Exception("Could not determine environment. Please ensure you have installed and configured Drupal or Wordpress.") ;
+  }
+  
+  protected function fetch_aws_credentials_drupal() {
+
+    // Backup and Migrate 3 changed column name from "type" to "subtype".
+    $col_qry = $this->pdo->query("SHOW COLUMNS FROM backup_migrate_destinations LIKE '%type'");
+    $col_info = $col_qry->fetch();
+    $col_name = $col_info['Field'];
+
+    $qry = $this->pdo->query("SELECT * FROM backup_migrate_destinations WHERE {$col_name}='S3'") ;
+    
+    if ($qry->rowCount() === 1) {
+      $row = $qry->fetch() ;
+      $url = $row['location'] ;
+      $creds = $this->parse_aws_url($url) ;
+      
+      if (!isset($this->opts['id'])) { $this->opts['id'] = $creds['id'] ; }
+      if (!isset($this->opts['secret'])) { $this->opts['secret'] = $creds['secret'] ; }
+      if (!isset($this->opts['bucket'])) { $this->opts['bucket'] = $creds['bucket'] ; }
+      if (!isset($this->opts['prefix'])) { $this->opts['prefix'] = $creds['prefix'] ; }
+      return true ;
+    }
+
+    if (!$qry->rowCount())    { $this->exit_with_message("No S3 locations found in database. Please try again and specify id, secret, and bucket."); }
+    if ($qry->rowCount() > 1) { $this->exit_with_message("Multiple S3 locations found in database. Please try again and specify bucket"); }
+    
+    return false ;
   }
   
   protected function parse_aws_url($url) {
