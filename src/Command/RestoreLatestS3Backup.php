@@ -241,6 +241,8 @@ EOT;
       $this->print_line("\nYou may need to run `gr set-perms`");
     } else {
       $this->print_line('ERROR');
+      $this->print_line("\n  ! Could not find unzipped file: {$unzipped}");
+      $this->print_line("    You may need to manually restore from {$tmp_dir}");
     }
     
     $this->print_line('');
