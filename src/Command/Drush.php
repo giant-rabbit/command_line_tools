@@ -36,7 +36,11 @@ EOT;
     $vhost_config_file_name = basename($drupal_root);
     $vhost_config_path = "/etc/apache2/sites-enabled/{$vhost_config_file_name}";
     if (!file_exists($vhost_config_path)) {
-      throw new \Exception("No apache virtualhost configuration file exists at {$vhost_config_path}.");
+      // Newer versions of Ubuntu add a .conf to the end of vhost config files.
+      $vhost_config_path = "{$vhost_config_path}.conf";
+      if (!file_exists($vhost_config_path)) {
+        throw new \Exception("No apache virtualhost configuration file exists at {$vhost_config_path}.");
+      }
     }
     $conf = new \Config();
     $vhost_config_root = $conf->parseConfig($vhost_config_path, 'apache');
@@ -45,8 +49,6 @@ EOT;
     while ($item = $vhost_config->getItem('directive', 'SetEnv', NULL, NULL, $i++)) {
       $env_variable = explode(' ', $item->content);
       if ($env_variable[0] == 'APP_ENV' || $env_variable[0] == 'APP_NAME') {
-        $env_variable_name = strtolower($env_variable[0]);
-        $$env_variable_name = $env_variable[1];
         if (putenv("{$env_variable[0]}={$env_variable[1]}") === FALSE) {
           throw new \Exception("Unable to set {$env_variable[0]} environment variable.");
         }
