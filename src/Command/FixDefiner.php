@@ -99,9 +99,9 @@ EOT;
         $this->throw_last_error("Error opening output file {$this->output_file_name}");
       }
     }
-    $this->file_get_contents_chunked(4096, $this, function ($chunk, $iteration, $fix_definer){
+    $this->file_get_contents_by_line(65536, $this, function ($line, $iteration, $fix_definer){
       $regex = '/\/\*[^*]*DEFINER=[^*]*\*\//';
-      $result = fwrite($fix_definer->output_file, preg_replace($regex, '', $chunk));
+      $result = fwrite($fix_definer->output_file, preg_replace($regex, '', $line));
       if ($result === FALSE) {
         $this->throw_last_error("Error writing to output file {$fix_definer->output_file_name}");
       }
@@ -128,15 +128,15 @@ EOT;
     }
   }
   
-  protected function file_get_contents_chunked($chunk_size, $fix_definer, $callback) {
+  protected function file_get_contents_by_line($max_size, $fix_definer, $callback) {
     
     $i = 0;
     while (!feof($fix_definer->input_file)){
-      $data = fread($fix_definer->input_file, $chunk_size);
-      if ($data === FALSE) {
+      $line = fgets($fix_definer->input_file, $max_size);
+      if ($line === FALSE && !feof($fix_definer->input_file)) {
         $fix_definer->throw_last_error("Error reading from input file {$fix_definer->input_file_name}");
       }
-      call_user_func_array($callback, array($data, $i, $fix_definer));
+      call_user_func_array($callback, array($line, $i, $fix_definer));
       $i++;
     }
   }
@@ -175,6 +175,6 @@ EOT;
 
   public function throw_last_error($message) {
     $error_info = error_get_last();
-    throw new Exception("$message: " . print_r($error_info, TRUE));
+    throw new \Exception("$message: " . print_r($error_info, TRUE));
   }
 }
