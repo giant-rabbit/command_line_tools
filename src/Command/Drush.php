@@ -43,7 +43,9 @@ EOT;
       throw new \Exception("No APP_NAME environment variable is set for this site.");
     }
     $args = implode(' ', $this->args);
-    system("drush {$args}");
+    $command = "drush {$args}";
+    $command = escapeshellcmd($command);
+    passthru($command);
   }
 
   /**
