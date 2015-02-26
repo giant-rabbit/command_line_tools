@@ -44,7 +44,6 @@ EOT;
     }
     $args = implode(' ', $this->args);
     $command = "drush {$args}";
-    $command = escapeshellcmd($command);
     passthru($command);
   }
 
