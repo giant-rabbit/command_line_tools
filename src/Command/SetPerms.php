@@ -102,10 +102,24 @@ EOT;
     foreach ($this->site_files as $file) {
       \GR\Shell::command("chown -R {$this->web_user}:{$this->web_user} {$file}", $opts);
       \GR\Shell::command("find {$file} -type d -print0 | xargs -0 chmod 2775", $opts);
-      \GR\Shell::command("find {$file} -type f -print0 | xargs -0 chmod 0664", $opts);
+      if (!$this->is_directory_empty($file)) {
+        \GR\Shell::command("find {$file} -type f -print0 | xargs -0 chmod 0664", $opts);
+      }
     }
   }
-  
+
+  public function is_directory_empty($directory_path) {
+    $directory_handle = opendir($directory_path);
+    if ($directory_handle === FALSE) {
+      throw new Exception("Error opening '$directory_path' to check if it is empty: " . print_r(error_get_last(), TRUE));
+    }
+    while (($entry = readdir($directory_handle)) !== FALSE) {
+      if ($entry != '.' && $entry != '..') {
+        return FALSE;
+      }
+    }
+    return TRUE;
+  }
   
   public function print_usage() {
     $this->print_line("Usage: gr set-perms -u <user> -g <group> [-d <directory>]");
