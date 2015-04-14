@@ -102,21 +102,16 @@ EOT;
     foreach ($this->site_files as $file) {
       \GR\Shell::command("chown -R {$this->web_user}:{$this->web_user} {$file}", $opts);
       \GR\Shell::command("find {$file} -type d -print0 | xargs -0 chmod 2775", $opts);
-      if (!$this->is_directory_empty($file)) {
+      if ($this->directory_contains_files($file)) {
         \GR\Shell::command("find {$file} -type f -print0 | xargs -0 chmod 0664", $opts);
       }
     }
   }
 
-  public function is_directory_empty($directory_path) {
-    $directory_handle = opendir($directory_path);
-    if ($directory_handle === FALSE) {
-      throw new Exception("Error opening '$directory_path' to check if it is empty: " . print_r(error_get_last(), TRUE));
-    }
-    while (($entry = readdir($directory_handle)) !== FALSE) {
-      if ($entry != '.' && $entry != '..') {
-        return FALSE;
-      }
+  public function directory_contains_files($directory_path) {
+    list($stdout_data, $stderr_data) = \GR\Shell::command("find {$directory_path} -type f | wc -l");
+    if (trim($stdout_data) == "0") {
+      return FALSE;
     }
     return TRUE;
   }
