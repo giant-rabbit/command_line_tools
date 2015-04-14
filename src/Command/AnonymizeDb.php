@@ -85,10 +85,6 @@ EOT;
       $this->type = strtolower($this->type);
     }
 
-    if (\GR\Hash::fetch($opts,'set-password')) {
-      $this->password = $this->prompt_hidden("Password:");
-    }
-
     $this->get_options_from_environment();
   }
 
@@ -349,7 +345,7 @@ EOT;
     $specs->add("backup-to:", "Directory to put backup in. Defaults to PHP's sys_get_temp_dir()");
 
     $specs->add("u|username:", "MySQL User.{$break}If run from a Drupal or Wordpress root, will attempt to retrieve{$break}this value from site config");
-    $specs->add("p|set-password", "Flag to spec password for MySQL.{$break}The tool will prompt for the password after command input");
+    $specs->add("p|password:", "Flag to spec password for MySQL.{$break}The tool will prompt for the password after command input");
     $specs->add("host:", "MySQL Host.{$break}Defaults to localhost, or if run from a Drupal or Wordpress root,{$break}will attempt to retrieve this value from site config");
     $specs->add("t|type:", "Database Type [drupal|wordpress].{$break}If not given, the tool makes an intelligent guess{$break}based on the your current directory.");
     $specs->add("d|domain:", "Client's email domain");
