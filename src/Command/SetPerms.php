@@ -58,6 +58,9 @@ EOT;
       $this->site_files = glob($this->directory . "/sites/*/files");
     } elseif ($this->environment == 'wordpress') {
       $this->site_files = glob($this->directory . "/wp-content/uploads");
+      $this->site_files = array_merge($this->site_files, glob($this->directory . "/wp-content/themes/*/cache"));
+      $this->site_files[] = $this->directory . "/wp-content/blogs.dir";
+      $this->site_files[] = $this->directory . "/wp-content/plugins/really-simple-captcha/tmp";
     }
     
     // @todo figure out why the optionkit parser won't take multiple values here
