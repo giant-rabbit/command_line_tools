@@ -230,21 +230,41 @@ EOT;
     $this->print_line("  Deleting contents of sites/default/files...");
     \GR\Shell::command("rm -rf sites/default/files");
 
-    echo "  Unzipping to sites/default/files...";
-    $cmd = "tar -xvf {$tmp_dest} -C {$tmp_dir}";
-    $unzipped = "{$tmp_dir}/" . basename($files_tarball,'.tar.gz');
-    $unzipped = str_replace('.tar.gz','',$unzipped);
-    \GR\Shell::command($cmd, array('throw_exception_on_nonzero'=>true));
-    if (is_dir($unzipped)){
-      \GR\Shell::command("mv {$unzipped}/files {$this->root_dir}/sites/default/");
-      $this->print_line('done');
-      $this->print_line("\nYou may need to run `gr set-perms`");
-    } else {
-      $this->print_line('ERROR');
-      $this->print_line("\n  ! Could not find unzipped file: {$unzipped}");
-      $this->print_line("    You may need to manually restore from {$tmp_dir}");
+    $tmp_extracted_dest = "{$tmp_dest}_extracted";
+    if (!is_dir($tmp_extracted_dest)) {
+      $result = mkdir($tmp_extracted_dest);
+      if ($result === FALSE) {
+        throw new Exception("Error opening '$tmp_extracted_dest': " . print_r(error_get_last(), TRUE));
+      }
     }
-
+    $this->print_line("  Unzipping to sites/default/files...to $tmp_extracted_dest");
+    $cmd = "tar -xvf {$tmp_dest} -C {$tmp_extracted_dest}";
+    \GR\Shell::command($cmd, array('throw_exception_on_nonzero'=>true));
+    $dir = opendir($tmp_extracted_dest);
+    if ($dir === FALSE) {
+      throw new \Exception("Unable to open '$tmp_extracted_dest': " . print_r(error_get_last(), TRUE));
+    }
+    $sub_dir_names = array();
+    while (($entry = readdir($dir)) !== FALSE) {
+      if ($entry == "." || $entry == "..") {
+        continue;
+      }
+      $sub_dir_names[] = $entry;
+    }
+    $found = FALSE;
+    foreach ($sub_dir_names as $sub_dir_name) {
+      $files_path = "$tmp_extracted_dest/$sub_dir_name/files";
+      if (is_dir($files_path)) {
+        $found = TRUE;
+	break;
+      }
+    }
+    if (!$found) {
+      throw new \Exception("Couldn't find files directory in extracted files at '$tmp_extracted_dest'.");
+    }
+    \GR\Shell::command("mv {$files_path} {$this->root_dir}/sites/default/");
+    $this->print_line('done');
+    $this->print_line("\nYou may need to run `gr set-perms`");
     $this->print_line('');
   }
 
