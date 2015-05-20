@@ -53,12 +53,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/giant-rabbit/php-util.git",
-                "reference": "29cbdb7513f78870f44e07afd93e79abc92c11ee"
+                "reference": "2481a2adda3c1fe5d60143c0151ba2a80e889746"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giant-rabbit/php-util/zipball/29cbdb7513f78870f44e07afd93e79abc92c11ee",
-                "reference": "29cbdb7513f78870f44e07afd93e79abc92c11ee",
+                "url": "https://api.github.com/repos/giant-rabbit/php-util/zipball/2481a2adda3c1fe5d60143c0151ba2a80e889746",
+                "reference": "2481a2adda3c1fe5d60143c0151ba2a80e889746",
                 "shasum": ""
             },
             "require-dev": {
@@ -87,7 +87,7 @@
             ],
             "description": "Some PHP functions we use a lot.",
             "homepage": "https://github.com/giant-rabbit/php-util",
-            "time": "2015-05-01 22:14:13"
+            "time": "2015-05-05 22:52:06"
         },
         {
             "name": "pear-pear.php.net/Config",
@@ -487,17 +487,17 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.6.6",
+            "version": "v2.6.7",
             "target-dir": "Symfony/Component/Yaml",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "174f009ed36379a801109955fc5a71a49fe62dd4"
+                "reference": "f157ab074e453ecd4c0fa775f721f6e67a99d9e2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/174f009ed36379a801109955fc5a71a49fe62dd4",
-                "reference": "174f009ed36379a801109955fc5a71a49fe62dd4",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/f157ab074e453ecd4c0fa775f721f6e67a99d9e2",
+                "reference": "f157ab074e453ecd4c0fa775f721f6e67a99d9e2",
                 "shasum": ""
             },
             "require": {
@@ -523,17 +523,17 @@
             ],
             "authors": [
                 {
-                    "name": "Symfony Community",
-                    "homepage": "http://symfony.com/contributors"
-                },
-                {
                     "name": "Fabien Potencier",
                     "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
                 }
             ],
             "description": "Symfony Yaml Component",
-            "homepage": "http://symfony.com",
-            "time": "2015-03-30 15:54:10"
+            "homepage": "https://symfony.com",
+            "time": "2015-05-02 15:18:45"
         }
     ],
     "aliases": [],
