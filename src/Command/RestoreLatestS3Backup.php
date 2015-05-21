@@ -237,26 +237,31 @@ EOT;
         throw new Exception("Error opening '$tmp_extracted_dest': " . print_r(error_get_last(), TRUE));
       }
     }
-    $this->print_line("  Unzipping to sites/default/files...to $tmp_extracted_dest");
+    $this->print_line("  Unzipping to $tmp_extracted_dest");
     $cmd = "tar -xvf {$tmp_dest} -C {$tmp_extracted_dest}";
     \GR\Shell::command($cmd, array('throw_exception_on_nonzero'=>true));
-    $dir = opendir($tmp_extracted_dest);
-    if ($dir === FALSE) {
-      throw new \Exception("Unable to open '$tmp_extracted_dest': " . print_r(error_get_last(), TRUE));
-    }
-    $sub_dir_names = array();
-    while (($entry = readdir($dir)) !== FALSE) {
-      if ($entry == "." || $entry == "..") {
-        continue;
-      }
-      $sub_dir_names[] = $entry;
-    }
+    $files_path = "$tmp_extracted_dest/sites/default/files";
     $found = FALSE;
-    foreach ($sub_dir_names as $sub_dir_name) {
-      $files_path = "$tmp_extracted_dest/$sub_dir_name/files";
-      if (is_dir($files_path)) {
-        $found = TRUE;
-	break;
+    if (is_dir($files_path)) {
+      $found = TRUE;
+    } else {
+      $dir = opendir($tmp_extracted_dest);
+      if ($dir === FALSE) {
+        throw new \Exception("Unable to open '$tmp_extracted_dest': " . print_r(error_get_last(), TRUE));
+      }
+      $sub_dir_names = array();
+      while (($entry = readdir($dir)) !== FALSE) {
+        if ($entry == "." || $entry == "..") {
+          continue;
+        }
+        $sub_dir_names[] = $entry;
+      }
+      foreach ($sub_dir_names as $sub_dir_name) {
+        $files_path = "$tmp_extracted_dest/$sub_dir_name/files";
+        if (is_dir($files_path)) {
+          $found = TRUE;
+          break;
+        }
       }
     }
     if (!$found) {
