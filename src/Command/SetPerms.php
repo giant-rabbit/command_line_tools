@@ -103,10 +103,12 @@ EOT;
     \GR\Shell::command("find {$this->directory} -type f -print0 | xargs -0 chmod 664", $opts);
 
     foreach ($this->site_files as $file) {
-      \GR\Shell::command("chown -R {$this->web_user}:{$this->web_user} {$file}", $opts);
-      \GR\Shell::command("find {$file} -type d -print0 | xargs -0 chmod 2775", $opts);
-      if ($this->directory_contains_files($file)) {
-        \GR\Shell::command("find {$file} -type f -print0 | xargs -0 chmod 0664", $opts);
+      if (is_dir($file)) {
+        \GR\Shell::command("chown -R {$this->web_user}:{$this->web_user} {$file}", $opts);
+i       \GR\Shell::command("find {$file} -type d -print0 | xargs -0 chmod 2775", $opts);
+        if ($this->directory_contains_files($file)) {
+          \GR\Shell::command("find {$file} -type f -print0 | xargs -0 chmod 0664", $opts);
+        }
       }
     }
   }
