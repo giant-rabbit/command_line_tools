@@ -111,7 +111,10 @@ EOT;
 
   public function get_bucket_contents() {
     $bucket = $this->opts['bucket'];
-    $prefix = $this->opts['prefix'];
+    $prefix = NULL;
+    if (array_key_exists('prefix', $this->opts)) {
+      $prefix = $this->opts['prefix'];
+    }
     return \S3::getBucket($bucket, $prefix);
   }
 
