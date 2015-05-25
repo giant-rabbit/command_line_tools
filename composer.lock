@@ -53,12 +53,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/giant-rabbit/php-util.git",
-                "reference": "2481a2adda3c1fe5d60143c0151ba2a80e889746"
+                "reference": "e90493d6f35812267a1c6350fdb12e22192d2ff5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giant-rabbit/php-util/zipball/2481a2adda3c1fe5d60143c0151ba2a80e889746",
-                "reference": "2481a2adda3c1fe5d60143c0151ba2a80e889746",
+                "url": "https://api.github.com/repos/giant-rabbit/php-util/zipball/e90493d6f35812267a1c6350fdb12e22192d2ff5",
+                "reference": "e90493d6f35812267a1c6350fdb12e22192d2ff5",
                 "shasum": ""
             },
             "require-dev": {
@@ -87,7 +87,7 @@
             ],
             "description": "Some PHP functions we use a lot.",
             "homepage": "https://github.com/giant-rabbit/php-util",
-            "time": "2015-05-05 22:52:06"
+            "time": "2015-05-25 01:12:46"
         },
         {
             "name": "pear-pear.php.net/Config",
