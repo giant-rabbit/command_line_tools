@@ -105,7 +105,7 @@ EOT;
     foreach ($this->site_files as $file) {
       if (is_dir($file)) {
         \GR\Shell::command("chown -R {$this->web_user}:{$this->web_user} {$file}", $opts);
-i       \GR\Shell::command("find {$file} -type d -print0 | xargs -0 chmod 2775", $opts);
+	\GR\Shell::command("find {$file} -type d -print0 | xargs -0 chmod 2775", $opts);
         if ($this->directory_contains_files($file)) {
           \GR\Shell::command("find {$file} -type f -print0 | xargs -0 chmod 0664", $opts);
         }
