@@ -69,7 +69,6 @@ class GR {
   }
   
   public function print_help() {
-    echo "\n\n" ;
     echo "GR Command Line Tools Help\n" ;
     echo "===================================\n\n" ;
     echo "* Available Application Options:\n" ;
@@ -104,15 +103,14 @@ class GR {
   
 
   public function run() {
-  
     if ($this->no_action()) {
-      $this->print_usage() ;
-      return ;
+      $this->print_help() ;
+      return 0;
     }
   
     if (isset($this->opts['help']) && $this->opts['help']) {
       $this->print_help() ;
-      return ;
+      return 0;
     }
     
     if ($this->subcommands) {
@@ -122,7 +120,13 @@ class GR {
         $args = $arr['arguments'] ;
         $command = new $className($opts,$args) ;
         $command->run() ;
+        return 0;
       }
+    }
+    else {
+      echo "\nCommand not found.\n" ;
+      $this->print_usage() ;
+      return 64;
     }
   }
   
