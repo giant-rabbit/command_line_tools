@@ -1,15 +1,7 @@
 {
-    "repositories": [
-      {
-        "type": "pear",
-        "url": "http://pear.php.net"
-      }
-    ],
-
     "require": { 
       "corneltek/getoptionkit": "~1.2",
-      "giant-rabbit/php-util": "dev-master",
-      "pear-pear/Config": "1.10.12"
+      "giant-rabbit/php-util": "dev-master"
     },
     
     "require-dev": {
