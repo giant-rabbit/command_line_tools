@@ -50,24 +50,12 @@ EOT;
   public function __construct($opts=false,$args=false) {
     parent::__construct($opts,$args) ;
     $this->directory = realpath(\GR\Hash::fetch($opts,'directory','.'));
-    $this->environment = detectEnvironment($this->directory);
-    $this->user = \GR\Hash::fetch($opts, 'user');
-    $this->group = \GR\Hash::fetch($opts,'group');
-    $this->web_user = \GR\Hash::fetch($opts,'web-user','www-data');
-    if ($this->environment == 'drupal') {
-      $this->site_files = glob($this->directory . "/sites/*/files");
-    } elseif ($this->environment == 'wordpress') {
-      $this->site_files = glob($this->directory . "/wp-content/uploads");
-      $this->site_files = array_merge($this->site_files, glob($this->directory . "/wp-content/themes/*/cache"));
-      $this->site_files[] = $this->directory . "/wp-content/blogs.dir";
-      $this->site_files[] = $this->directory . "/wp-content/plugins/really-simple-captcha/tmp";
-    }
-    
+    $this->site_info = new \SiteInfo($this->directory);
     // @todo figure out why the optionkit parser won't take multiple values here
     $addl_files = \GR\Hash::fetch($opts, 'additional-site-files');
     if ($addl_files) {
       trigger_error("set-perms cannot currently accept more than one value for --additional-site-files\n", E_USER_NOTICE);
-      $this->site_files = array_merge($this->site_files, $addl_files);
+      $this->site_info->web_writeable_paths = array_merge($this->site_info->web_writeable_paths, $addl_files);
     }    
     
   }
@@ -87,11 +75,6 @@ EOT;
     // keep this line
     if (!parent::run()) { return false ; }
     
-    if (!$this->environment) {
-      throw new \Exception("The directory specified does not appear to be a WordPress or Drupal installation");
-    }
-    
-    
     if (!$this->user || !$this->group) {
       $this->print_usage();
       exit;
@@ -102,7 +85,7 @@ EOT;
     \GR\Shell::command("find {$this->directory} -type d -print0 | xargs -0 chmod 2775", $opts);
     \GR\Shell::command("find {$this->directory} -type f -print0 | xargs -0 chmod 664", $opts);
 
-    foreach ($this->site_files as $file) {
+    foreach ($this->site_info->web_writeable_paths as $file) {
       if (is_dir($file)) {
         \GR\Shell::command("chown -R {$this->web_user}:{$this->web_user} {$file}", $opts);
 	\GR\Shell::command("find {$file} -type d -print0 | xargs -0 chmod 2775", $opts);

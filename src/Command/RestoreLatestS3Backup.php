@@ -26,14 +26,12 @@ class RestoreLatestS3Backup extends Command {
 
 EOT;
 
-  protected $root_dir;
-
   public function __construct($opts=false,$args=false) {
     $opts = $opts ?: array();
     parent::__construct($opts,$args);
     if (!\GR\Hash::fetch($opts,'help')) {
       $root = \GR\Hash::fetch($opts,'root');
-      $this->root_dir = $root ? realpath($root) : $this->get_cli_dir();
+      $this->site_info = new \SiteInfo($root);
       $this->pdo = $this->get_database_connection();
       $this->bootstrap_s3();
     }
@@ -92,20 +90,12 @@ EOT;
     \S3::setAuth($this->opts['id'], $this->opts['secret']) ;
   }
 
-  public function get_environment($dir=false) {
-    $dir = $dir ?: $this->root_dir ;
-    return detectEnvironment($dir);
-  }
-
   public function get_database_credentials() {
-    $env = $this->get_environment() ;
-
-    if ('wordpress' == $env) {
-      return \GR\Wordpress::get_database_credentials($this->root_dir);
-    } elseif ('drupal' == $env) {
-      return \GR\Drupal::get_database_credentials($this->root_dir);
-    } else {
-      throw new \Exception("Could not determine environment. Please ensure you have installed and configured Drupal or Wordpress.") ;
+    if ($this->site_info->environment === 'drupal') {
+      return \GR\Drupal::get_database_credentials($this->site_info->root_path);
+    }
+    elseif ($this->site_info->environment === 'wordpress') {
+      return \GR\Wordpress::get_database_credentials($this->site_info->root_path);
     }
   }
 
@@ -127,19 +117,16 @@ EOT;
   }
 
   public function fetch_aws_credentials() {
-    $env = $this->get_environment() ;
-    if ('drupal' === $env) {
+    if ($this->site_info->environment === 'drupal') {
       return $this->fetch_aws_credentials_drupal();
-    } elseif ('wordpress' === $env) {
+    }
+    elseif ($this->site_info->environment === 'wordpress') {
       $this->exit_with_message("WORDPRESS NOT YET SUPPORTED") ;
       exit ;
     }
-
-    throw new \Exception("Could not determine environment. Please ensure you have installed and configured Drupal or Wordpress.") ;
   }
 
   protected function fetch_aws_credentials_drupal() {
-
     // Backup and Migrate 3 changed column name from "type" to "subtype".
     $col_qry = $this->pdo->query("SHOW COLUMNS FROM backup_migrate_destinations LIKE '%type'");
     $col_info = $col_qry->fetch();
@@ -270,7 +257,7 @@ EOT;
     if (!$found) {
       throw new \Exception("Couldn't find files directory in extracted files at '$tmp_extracted_dest'.");
     }
-    \GR\Shell::command("mv {$files_path} {$this->root_dir}/sites/default/");
+    \GR\Shell::command("mv {$files_path} {$this->site_info->root_path}/sites/default/");
     $this->print_line('done');
     $this->print_line("\nYou may need to run `gr set-perms`");
     $this->print_line('');

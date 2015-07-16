@@ -12,8 +12,6 @@ class Command {
     $this->opts = $opts ? $opts : array();
     $this->args = $args ? $args : array();
     $this->working_directory = $this->get_cli_dir();
-    $this->environment = detectEnvironment($this->working_directory);
-    $this->app_root = $this->get_app_root();
     $this->assign_options();
   }
 
@@ -76,21 +74,6 @@ class Command {
     if (!empty($missing)) {
       $string = implode(', ',$missing);
       throw new \Exception("Missing options or arguments: {$string}");
-    }
-  }
-
-  protected function get_app_root($dir=false) {
-
-    if ($dir == '/') {
-      throw new \Exception("Could not find application root by searching for .git directory");
-    }
-
-    $dir = $dir ? realpath($dir) : __DIR__;
-    $files = scandir($dir);
-    if (in_array('.git',$files)) {
-      return $dir;
-    } else {
-      return $this->get_app_root($dir . "/..");
     }
   }
 

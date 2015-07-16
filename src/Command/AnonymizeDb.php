@@ -74,17 +74,9 @@ EOT;
   public function __construct($opts=false,$args=false) {
     parent::__construct($opts,$args) ;
     if (isset($opts['help'])) return true;
-
-    $this->database = \GR\Hash::fetch($args,0);
-    if (!isset($this->type)) {
-      $this->type = $this->environment;
-      if (!$this->type) {
-        throw new \GR\Exception\MissingEnvironmentException("Database Type (--type [drupal|wordpress]) not specified and could not be determined");
-      }
-    } else {
-      $this->type = strtolower($this->type);
-    }
-
+    $this->site_info = new \SiteInfo();
+    $this->database = \GR\Hash::fetch($args, 0);
+    $this->type = \GR\Hash::fetch($opts, 'type', $this->site_info->environment);
     $this->get_options_from_environment();
   }
 
@@ -125,7 +117,7 @@ EOT;
     }
 
     $db_name = strtolower($this->database);
-    $env = new \GR\ServerEnv($this->get_app_root());
+    $env = new \GR\ServerEnv($this->site_info->root_path);
     $env->setEnvVars();
     if (strpos($db_name, 'prod') !== false || getEnv('APP_ENV') === 'prod') {
       return false;
@@ -154,8 +146,6 @@ EOT;
   public function get_password() {
     return $this->password;
   }
-
-
 
   protected function anonymize_database() {
     switch($this->type) {
@@ -273,9 +263,10 @@ EOT;
 
   protected function get_options_from_environment() {
     $creds = false;
-    if ($this->environment == 'drupal') {
+    if ($this->site_info->environment == 'drupal') {
       $creds = \GR\Drupal::get_database_credentials($this->working_directory);
-    } elseif ($this->environment == 'wordpress') {
+    }
+    elseif ($this->site_info->environment == 'wordpress') {
       $creds = \GR\Wordpress::get_database_credentials($this->working_directory);
     }
 

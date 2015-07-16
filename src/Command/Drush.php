@@ -23,17 +23,15 @@ EOT;
 
   public function __construct($opts,$args) {
     parent::__construct($opts,$args) ;
+    $this->site_info = new \SiteInfo();
   }
 
   public function run() {
     if (!parent::run()) { return false ; }
-    $result = \GR\Shell::command("drush st 'Drupal root' --pipe");
-    $result = json_decode($result[0], TRUE);
-    $drupal_root = $result['root'];
-    if (empty($drupal_root)) {
+    if (empty($this->site_info->root_path) || $this->site_info->environment !== 'drupal') {
       throw new \Exception("Unable to determine the Drupal root directory. Make sure you are running this command inside a Drupal website's root directory.");
     }
-    $env = new \GR\ServerEnv($drupal_root);
+    $env = new \GR\ServerEnv($this->site_info->root_path);
     $env->requireApacheConfFile();
     $env->setEnvVars();
     if (getenv("APP_ENV") === FALSE) {
