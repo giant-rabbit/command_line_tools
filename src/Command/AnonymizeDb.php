@@ -76,6 +76,9 @@ EOT;
     if (isset($opts['help'])) return true;
     $this->site_info = new \SiteInfo();
     $this->database = \GR\Hash::fetch($args, 0);
+    $this->domain = \GR\Hash::fetch($opts, 'domain', 'giantrabbit.com');
+    $process_user = posix_getpwuid(posix_geteuid());
+    $this->alias = \GR\Hash::fetch($opts, 'alias', $process_user['name']); 
     $this->type = \GR\Hash::fetch($opts, 'type', $this->site_info->environment);
     $this->get_options_from_environment();
   }
@@ -339,8 +342,8 @@ EOT;
     $specs->add("p|password:", "Flag to spec password for MySQL.{$break}The tool will prompt for the password after command input");
     $specs->add("host:", "MySQL Host.{$break}Defaults to localhost, or if run from a Drupal or Wordpress root,{$break}will attempt to retrieve this value from site config");
     $specs->add("t|type:", "Database Type [drupal|wordpress].{$break}If not given, the tool makes an intelligent guess{$break}based on the your current directory.");
-    $specs->add("d|domain:", "Client's email domain");
-    $specs->add("a|alias:", "Client's email alias or your email username{$break}(eg 'ecomod' or 'bwilhelm')");
+    $specs->add("d|domain?", "Client's email domain. Defaults to giantrabbit.com.");
+    $specs->add("a|alias?", "Client's email alias or your email username. Defaults to the user initiating the command. {$break}(eg 'ecomod' or 'bwilhelm')");
 
     //-------------------------------------------------------++
 
