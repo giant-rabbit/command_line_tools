@@ -51,6 +51,11 @@ EOT;
     parent::__construct($opts,$args) ;
     $this->directory = realpath(\GR\Hash::fetch($opts,'directory','.'));
     $this->site_info = new \SiteInfo($this->directory);
+    $process_user = posix_getpwuid(posix_geteuid());
+    $this->user = \GR\Hash::fetch($opts, 'user', $process_user['name']);
+    $this->group = \GR\Hash::fetch($opts, 'group', 'giantrabbit');
+    $web_user = exec('whoami');
+    $this->web_user = \GR\Hash::fetch($opts, 'web-user', $web_user);
     // @todo figure out why the optionkit parser won't take multiple values here
     $addl_files = \GR\Hash::fetch($opts, 'additional-site-files');
     if ($addl_files) {
@@ -105,7 +110,7 @@ EOT;
   }
   
   public function print_usage() {
-    $this->print_line("Usage: gr set-perms -u <user> -g <group> [-d <directory>]");
+    $this->print_line("Usage: gr set-perms [-u <user> -g <group> -d <directory>]");
   }
   
   
@@ -138,8 +143,8 @@ EOT;
   public static function option_kit() {
     $specs = Command::option_kit() ; // DO NOT DELETE THIS LINE
     
-    $specs->add('u|user:', "User to own files");
-    $specs->add('g|group:', "Group to own files");
+    $specs->add('u|user?', "User to own files. Defaults to the user who initiated the command.");
+    $specs->add('g|group?', "Group to own files. Defaults to giantrabbit.");
     $specs->add("d|directory?", "Root directory of Drupal/Wordpress install. Defaults to current directory.");
     $specs->add("a|additional-site-files+", "Files or Directories other than sites/*/files or wp-content/uploads that should be owned by www-data");
     $specs->add("w|web-user?", "(optional) User under which the web process runs. Defaults to www-data") ;
