@@ -56,31 +56,26 @@ class AnonymizeDb extends Command {
 
 EOT;
 
+  public $site_info;
+  public $database_credentials;
+  public $type;
+  public $domain;
+  public $alias;
 
-  protected $database_connection;
-  protected $database;
-  protected $username;
-  protected $password;
-  protected $host;
   protected $required_arguments = array(
-    'database',
-    'username',
-    'password',
-    'host',
+    'database_credentials',
     'domain',
     'alias'
   );
 
-  public function __construct($opts=false,$args=false) {
-    parent::__construct($opts,$args) ;
-    if (isset($opts['help'])) return true;
+  public function __construct($opts = FALSE, $args = FALSE) {
+    parent::__construct($opts, $args) ;
     $this->site_info = new \SiteInfo();
-    $this->database = \GR\Hash::fetch($args, 0);
+    $this->type = \GR\Hash::fetch($opts, 'type', $this->site_info->environment);
+    $this->set_database_credentials();
     $this->domain = \GR\Hash::fetch($opts, 'domain', 'giantrabbit.com');
     $process_user = posix_getpwuid(posix_geteuid());
     $this->alias = \GR\Hash::fetch($opts, 'alias', $process_user['name']); 
-    $this->type = \GR\Hash::fetch($opts, 'type', $this->site_info->environment);
-    $this->get_options_from_environment();
   }
 
 
@@ -96,8 +91,7 @@ EOT;
    */
  public function run() {
     // keep this line
-    if (!parent::run()) { return false ; }
-
+    if (!parent::run()) { return FALSE; }
     $this->validate_arguments();
     $this->verify_database_with_user();
 
@@ -107,84 +101,66 @@ EOT;
       $this->print_line("* Skipping database backup...");
     }
 
-    $this->connect_to_database();
+    $this->print_line("* Connecting to database {$this->database_credentials['database']} as user {$this->database_credentials['username']}@{$this->database_credentials['host']}");
+    $this->site_info->get_database_connection($this->database_credentials);
     $this->anonymize_database();
 
-    $this->print_line("\ndone.");
+    $this->print_line("\nThe database was successfully anonymized.");
   }
 
 
   public function check_database_name() {
     if (isset($this->clobber) && $this->clobber) {
-      return 'OK';
+      return TRUE;
     }
-
-    $db_name = strtolower($this->database);
+    $db_name = strtolower($this->database_credentials['database']);
     $env = new \GR\ServerEnv($this->site_info->root_path);
-    $env->setEnvVars();
-    if (strpos($db_name, 'prod') !== false || getEnv('APP_ENV') === 'prod') {
-      return false;
+    $env->setEnvVars($throw_exception = FALSE);
+    if (strpos($db_name, 'prod') !== FALSE || getEnv('APP_ENV') === 'prod') {
+      return FALSE;
     }
-
-    if (strpos($db_name, 'stag') === false
-    &&  strpos($db_name, 'dev') === false) {
+    if (strpos($db_name, 'stag') === FALSE && strpos($db_name, 'dev') === FALSE && strpos($db_name, 'local') === FALSE) {
       return 'CONFIRM';
     }
 
-    return 'OK';
+    return TRUE;
   }
 
-  public function get_database() {
-    return $this->database;
-  }
-
-  public function get_host() {
-    return $this->host;
-  }
-
-  public function get_username() {
-    return $this->username;
-  }
-
-  public function get_password() {
-    return $this->password;
+  public function set_database_credentials() {
+    $database_credentials = $this->site_info->database_credentials;
+    $overridden_database_credentials = $database_credentials;
+    $overridden_database_credentials['database'] = \GR\Hash::fetch($this->args, 0, $database_credentials['database']);
+    foreach (array('username', 'password', 'host') as $option) {
+      $overridden_database_credentials[$option] = \GR\Hash::fetch($this->opts, $option, $database_credentials[$option]);
+    }
+    $this->database_credentials = $overridden_database_credentials;
   }
 
   protected function anonymize_database() {
-    switch($this->type) {
-      case 'drupal':
-        $this->anonymize_drupal_database();
-        break;
-
-      case 'wordpress':
-        $this->anonymize_wordpress_database();
-        break;
-
-      default:
-        throw new \Exception("Invalid database type {$this->type}. Must be either 'drupal' or 'wordpress'");
+    $environment_anonymize_function = "anonymize_{$this->type}_database";
+    if (!is_callable(array($this, $environment_anonymize_function))) {
+      throw new \Exception("Invalid database type {$this->type}. Must be either 'drupal' or 'wordpress'");
     }
+    $this->$environment_anonymize_function();
+    $this->anonymize_civicrm_tables_if_present();
   }
 
   protected function anonymize_drupal_database() {
-    $dbc = $this->database_connection;
+    $dbc = $this->site_info->database_connection;
     $this->print_line("\n* Anonymizing Drupal `users` table");
     $qry =  "UPDATE users SET mail=CONCAT('{$this->alias}', '+', uid, '@giantrabbit.com') ";
     $qry .= "WHERE mail NOT LIKE '%@giantrabbit.com' AND mail NOT LIKE CONCAT('%@','{$this->domain}')";
     $this->print_line("  {$qry}");
     $stmt = $dbc->prepare($qry);
     $stmt->execute();
-
-    $this->anonymize_civi_tables_if_present();
   }
 
   protected function anonymize_wordpress_database() {
-    $dbc = $this->database_connection;
-
+    $dbc = $this->site_info->database_connection;
     $tbl_qry = "SHOW TABLES LIKE '%_users'";
     $this->print_line($tbl_qry);
     $tbl_stmt = $dbc->prepare($tbl_qry);
     $tbl_stmt->execute();
-
     $rows = $tbl_stmt->fetchAll(\PDO::FETCH_NUM);
 
     foreach ($rows as $row) {
@@ -199,12 +175,10 @@ EOT;
         $this->exit_with_message("Could not determine table name for users table");
       }
     }
-
-    $this->anonymize_civi_tables_if_present();
   }
 
-  protected function anonymize_civi_tables_if_present() {
-    $dbc = $this->database_connection;
+  protected function anonymize_civicrm_tables_if_present() {
+    $dbc = $this->site_info->database_connection;
     $check_qry = "SHOW TABLES LIKE 'civicrm_email'";
     $check_stmt = $dbc->prepare($check_qry);
     $check_stmt->execute();
@@ -224,7 +198,7 @@ EOT;
     if (isset($this->backup_to)) {
       $backup_to = realpath($this->backup_to);
       if (is_dir($this->backup_to)) {
-        $backup_location = $this->backup_to . "/" . $this->database . "_" . date("U") . ".sql";
+        $backup_location = $this->backup_to . "/" . $this->database_credentials['database'] . "_" . date("U") . ".sql";
       } else {
         $backup_location = $this->backup_to;
       }
@@ -232,15 +206,15 @@ EOT;
       $backup_location = $this->get_tmp_backup_location();
     }
 
-    $this->print_line("* Backing up database {$this->database} to {$backup_location}");
-    $cmd = "mysqldump -u {$this->username} -p{$this->password} -h {$this->host} {$this->database} > {$backup_location}";
+    $this->print_line("* Backing up database {$this->database_credentials['database']} to {$backup_location}");
+    $cmd = "mysqldump -u {$this->database_credentials['username']} -p{$this->database_credentials['password']} -h {$this->database_credentials['host']} {$this->database_credentials['database']} > {$backup_location}";
     $streams = \GR\Shell::command($cmd);
     $this->print_line($streams[0]);
   }
 
   protected function get_tmp_backup_location() {
     $tmp = sys_get_temp_dir();
-    $db = $this->database;
+    $db = $this->database_credentials['database'];
     $ts = date("U");
     $loc = "{$tmp}/{$db}_{$ts}.sql";
 
@@ -249,56 +223,28 @@ EOT;
 
   protected function validate_arguments() {
     parent::validate_arguments();
-    if (isset($this->opts['type'])
-    &&  strtolower($this->opts['type']) != 'drupal'
-    &&  strtolower($this->opts['type']) != 'wordpress') {
+    if (!in_array(strtolower($this->type), array('drupal', 'wordpress'))) {
       throw new \GR\Exception\InvalidArgumentException("--type takes only 'drupal' or 'wordpress' as its values");
     }
   }
 
-  protected function connect_to_database() {
-    $this->print_line("* Connecting to database {$this->database} as user {$this->username}@{$this->host}");
-    $dbn = "mysql:host={$this->host};dbname={$this->database}";
-    $dbc = new \PDO($dbn,$this->username,$this->password);
-    $dbc->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-    $this->database_connection = $dbc;
-  }
-
-  protected function get_options_from_environment() {
-    $creds = false;
-    if ($this->site_info->environment == 'drupal') {
-      $creds = \GR\Drupal::get_database_credentials($this->working_directory);
-    }
-    elseif ($this->site_info->environment == 'wordpress') {
-      $creds = \GR\Wordpress::get_database_credentials($this->working_directory);
-    }
-
-    if ($creds) {
-      foreach ($creds as $key => $value) {
-        if (!isset($this->{$key})) $this->{$key} = $value ;
-      }
-    }
-
-    if (!isset($this->host)) $this->host = 'localhost' ;
-  }
-
   protected function verify_database_with_user() {
-    if (!$this->check_database_name()) {
-      $msg =  "! The database name {$this->database} looks like a production database." ;
+    if ($this->check_database_name() === FALSE) {
+      $msg =  "! The database name {$this->database_credentials['database']} looks like a production database." ;
       $msg .= "\n  If you're REALLY SURE you want to anonymize it, you can run this command";
       $msg .= "\n  with the --clobber option.";
       $this->exit_with_message($msg);
     }
 
     if ($this->check_database_name() === 'CONFIRM') {
-      $prompt =  "\n! I can't tell for sure that {$this->database} is a non-production database.";
+      $prompt =  "\n! I can't tell for sure that {$this->database_credentials['database']} is a non-production database.";
       $prompt .= "\n  If you're sure you want to anonymize it, please type the database name again.";
       $prompt .= "\n  Otherwise, simply press <return> to abort";
       $prompt .= "\n\nConfirm Database Name: ";
       $db_conf = $this->prompt($prompt,null);
 
-      if (!$db_conf || $db_conf != $this->database) {
-        $this->exit_with_message("bye");
+      if (!$db_conf || $db_conf != $this->database_credentials['database']) {
+        $this->exit_with_message("Database anonymization aborted.");
       }
     }
   }

@@ -16,7 +16,7 @@ class Command {
   }
 
   public function run() {
-    if (gr_array_fetch($this->opts,'help')) {
+    if (\GR\Hash::fetch($this->opts, 'help')) {
       $this->print_help() ;
       return false ;
     }

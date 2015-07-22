@@ -1,10 +1,16 @@
 #!/usr/bin/env php
 <?php 
 
-define('PROJECT_ROOT',__DIR__) ;
-foreach (glob(__DIR__ . "/src/lib/*.php") as $file) { require_once $file; }
-$loader = require_once __DIR__ . '/vendor/autoload.php' ;
+define('PROJECT_ROOT',__DIR__);
+$files = new RecursiveDirectoryIterator(__DIR__ . "/src/lib");
+foreach (new RecursiveIteratorIterator($files) as $file => $file_info) {
+  $file_parts = pathinfo($file);
+  if ($file_parts['extension'] === 'php') {
+    require_once $file;
+  }
+}
+$loader = require_once __DIR__ . '/vendor/autoload.php';
 
-$app = new GR\GR($argv) ;
-$exit_code = $app->run() ;
+$app = new GR\GR($argv);
+$exit_code = $app->run();
 exit($exit_code);

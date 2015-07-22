@@ -48,7 +48,7 @@ EOT;
     
     $ret = '' ;
     foreach ($opts as $opt) {
-      if (gr_array_fetch($this->opts,$opt)) {
+      if (\GR\Hash::fetch($this->opts, $opt)) {
         $ret .= "--{$opt} " ;
       }
     }
@@ -74,7 +74,7 @@ EOT;
     $option_string = $this->get_phpunit_options() ;
     
     chdir(PROJECT_ROOT . '/test') ;
-    $path = gr_array_fetch($this->args, 0, '.') ;
+    $path = \GR\Hash::fetch($this->args, 0, '.') ;
 
     $cmd = "phpunit {$option_string} {$path}" ;
     $streams = \GR\Shell::command($cmd, array('throw_exception_on_nonzero'=>false)) ;

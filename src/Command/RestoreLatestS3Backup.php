@@ -26,19 +26,18 @@ class RestoreLatestS3Backup extends Command {
 
 EOT;
 
-  public function __construct($opts=false,$args=false) {
-    $opts = $opts ?: array();
-    parent::__construct($opts,$args);
-    if (!\GR\Hash::fetch($opts,'help')) {
-      $root = \GR\Hash::fetch($opts,'root');
-      $this->site_info = new \SiteInfo($root);
-      $this->pdo = $this->get_database_connection();
-      $this->bootstrap_s3();
-    }
+  public $site_info;
+
+  public function __construct($opts = FALSE, $args = FALSE) {
+    parent::__construct($opts, $args);
+    $root = \GR\Hash::fetch($opts, 'root');
+    $this->site_info = new \SiteInfo($root);
+    $this->site_info->get_database_connection();
+    $this->bootstrap_s3();
   }
 
   public function run() {
-    if (!parent::run()) { return false ; }
+    if (!parent::run()) { return FALSE; }
 
     $contents = $this->get_bucket_contents();
     $db_array = array();
@@ -90,15 +89,6 @@ EOT;
     \S3::setAuth($this->opts['id'], $this->opts['secret']) ;
   }
 
-  public function get_database_credentials() {
-    if ($this->site_info->environment === 'drupal') {
-      return \GR\Drupal::get_database_credentials($this->site_info->root_path);
-    }
-    elseif ($this->site_info->environment === 'wordpress') {
-      return \GR\Wordpress::get_database_credentials($this->site_info->root_path);
-    }
-  }
-
   public function get_bucket_contents() {
     $bucket = $this->opts['bucket'];
     $prefix = NULL;
@@ -108,31 +98,21 @@ EOT;
     return \S3::getBucket($bucket, $prefix);
   }
 
-  public function get_database_connection() {
-    $creds = $this->get_database_credentials();
-    $dbn = "mysql:host={$creds['host']};dbname={$creds['database']}";
-    $pdo = new \PDO($dbn,$creds['username'],$creds['password']);
-    $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-    return $pdo;
-  }
-
   public function fetch_aws_credentials() {
-    if ($this->site_info->environment === 'drupal') {
-      return $this->fetch_aws_credentials_drupal();
+    $environment_fetch_aws_credentials_function = "fetch_aws_credentials_{$this->site_info->environment}";
+    if (!is_callable(array($this, $environment_fetch_aws_credentials_function))) {
+      throw new \Exception("Invalid database type {$this->type}. Must be either 'drupal' or 'wordpress'");
     }
-    elseif ($this->site_info->environment === 'wordpress') {
-      $this->exit_with_message("WORDPRESS NOT YET SUPPORTED") ;
-      exit ;
-    }
+    $this->$environment_fetch_aws_credentials_function();
   }
 
   protected function fetch_aws_credentials_drupal() {
     // Backup and Migrate 3 changed column name from "type" to "subtype".
-    $col_qry = $this->pdo->query("SHOW COLUMNS FROM backup_migrate_destinations LIKE '%type'");
+    $col_qry = $this->site_info->database_connection->query("SHOW COLUMNS FROM backup_migrate_destinations LIKE '%type'");
     $col_info = $col_qry->fetch();
     $col_name = $col_info['Field'];
 
-    $qry = $this->pdo->query("SELECT * FROM backup_migrate_destinations WHERE {$col_name}='S3'") ;
+    $qry = $this->site_info->database_connection->query("SELECT * FROM backup_migrate_destinations WHERE {$col_name}='S3'") ;
 
     if ($qry->rowCount() === 1) {
       $row = $qry->fetch() ;
@@ -146,10 +126,15 @@ EOT;
       return true ;
     }
 
-    if (!$qry->rowCount())    { $this->exit_with_message("No S3 locations found in database. Please try again and specify id, secret, and bucket."); }
+    if (!$qry->rowCount()) { $this->exit_with_message("No S3 locations found in database. Please try again and specify id, secret, and bucket."); }
     if ($qry->rowCount() > 1) { $this->exit_with_message("Multiple S3 locations found in database. Please try again and specify bucket"); }
 
     return false ;
+  }
+
+  public function fetch_aws_credentials_wordpress() {
+    $this->exit_with_message("Automatic AWS credential detection not currently supported.");
+    exit;
   }
 
   protected function parse_aws_url($url) {
@@ -195,7 +180,7 @@ EOT;
     }
 
     $this->print_line("  Loading DB Dump...");
-    $creds = $this->get_database_credentials();
+    $creds = $this->site_info->database_credentials;
     $sql_import = "gunzip -c {$import_me} | mysql -u {$creds['username']} -p{$creds['password']} -h{$creds['host']} {$creds['database']}";
     \GR\Shell::command($sql_import);
 
@@ -204,7 +189,7 @@ EOT;
       $this->disable_backup_migrate_schedules();
     }
 
-    $this->print_line('done.');
+    $this->print_line('Database successfully restored from backup.');
     $this->print_line('');
   }
 
@@ -258,13 +243,13 @@ EOT;
       throw new \Exception("Couldn't find files directory in extracted files at '$tmp_extracted_dest'.");
     }
     \GR\Shell::command("mv {$files_path} {$this->site_info->root_path}/sites/default/");
-    $this->print_line('done');
+    $this->print_line('Files successfully restored from backup.');
     $this->print_line("\nYou may need to run `gr set-perms`");
     $this->print_line('');
   }
 
   public function disable_backup_migrate_schedules() {
-    return $this->pdo->exec("UPDATE backup_migrate_schedules SET enabled=0");
+    return $this->site_info->database_connection->exec("UPDATE backup_migrate_schedules SET enabled=0");
   }
 
   /**
