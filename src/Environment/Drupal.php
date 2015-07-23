@@ -8,7 +8,6 @@ class Drupal {
     return array(
       'includes/common.inc',
       'misc/drupal.js',
-      'modules/field/field.module',
     );
   }
 
