@@ -54,7 +54,7 @@ EOT;
     $process_user = posix_getpwuid(posix_geteuid());
     $this->user = \GR\Hash::fetch($opts, 'user', $process_user['name']);
     $this->group = \GR\Hash::fetch($opts, 'group', 'giantrabbit');
-    $web_user = exec('whoami');
+    $web_user = exec('whoami') !== 'root' ? exec('whoami') : 'www-data';
     $this->web_user = \GR\Hash::fetch($opts, 'web-user', $web_user);
     // @todo figure out why the optionkit parser won't take multiple values here
     $addl_files = \GR\Hash::fetch($opts, 'additional-site-files');
