@@ -1,6 +1,6 @@
 <?php 
 
-namespace Environment;
+namespace GR\Environment;
 
 class Wordpress {
 

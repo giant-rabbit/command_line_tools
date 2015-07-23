@@ -17,10 +17,14 @@ class GR {
     $ret = array() ;
     foreach (glob(__DIR__ . "/Command/*.php") as $path) {
       $className = basename($path,'.php') ;
-      $ret[] = classnameToCommand($className) ;
+      $ret[] = Command::classnameToCommand($className) ;
     }
     sort($ret) ;
     return $ret ;
+  }
+
+  public function subcommandToClassname($subcommand) {
+    return "GR\\Command\\" . Command::commandToClassname($subcommand);
   }
   
   public function parse_args($args) {
@@ -34,7 +38,7 @@ class GR {
       if( in_array($parser->getCurrentArgument(), $this->get_subcommands() )) {
         $subcommand = $parser->advance() ;
         
-        $className = "GR\\Command\\" . commandToClassname($subcommand) ;
+        $className = $this->subcommandToClassname($subcommand);
         $specs = $className::option_kit()->specs ;
         $parser->setSpecs( $specs );
         $sub_options = $parser->continueParse();
@@ -81,7 +85,7 @@ class GR {
     echo "  (For help with specific subcommands, type `gr <subcommand> -h`)\n" ;
     
     foreach ($this->get_subcommands() as $subcommand) {
-      $className = "GR\\Command\\" . commandToClassname($subcommand) ;
+      $className = $this->subcommandToClassname($subcommand);;
       echo "\n  {$subcommand}\n" ;
       echo "    " . $className::DESCRIPTION . "\n";
     }
@@ -115,7 +119,7 @@ class GR {
     
     if ($this->subcommands) {
       foreach ($this->subcommands as $subcommand => $arr) {
-        $className = "GR\\Command\\" . commandToClassname($subcommand) ;
+        $className = $this->subcommandToClassname($subcommand);;
         $opts = $arr['options'] ;
         $args = $arr['arguments'] ;
         $command = new $className($opts,$args) ;

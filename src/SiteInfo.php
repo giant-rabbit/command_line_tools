@@ -1,5 +1,7 @@
 <?php
 
+namespace GR;
+
 class SiteInfo {
   public $root_path;
   public $environment;
@@ -147,7 +149,7 @@ class SiteInfo {
   }
 
   public function format_environment_class($environment) {
-    $environment_class = "\Environment\\" . ucfirst($environment);
+    $environment_class = "\GR\Environment\\" . ucfirst($environment);
     return $environment_class;
   }
 }

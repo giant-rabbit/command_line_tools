@@ -50,7 +50,7 @@ EOT;
   public function __construct($opts=false,$args=false) {
     parent::__construct($opts,$args) ;
     $this->directory = realpath(\GR\Hash::fetch($opts,'directory','.'));
-    $this->site_info = new \SiteInfo($this->directory);
+    $this->site_info = new \GR\SiteInfo($this->directory);
     $process_user = posix_getpwuid(posix_geteuid());
     $this->user = \GR\Hash::fetch($opts, 'user', $process_user['name']);
     $this->group = \GR\Hash::fetch($opts, 'group', 'giantrabbit');

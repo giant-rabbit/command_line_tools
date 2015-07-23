@@ -23,7 +23,7 @@ EOT;
 
   public function __construct($opts,$args) {
     parent::__construct($opts,$args) ;
-    $this->site_info = new \SiteInfo();
+    $this->site_info = new \GR\SiteInfo();
   }
 
   public function run() {

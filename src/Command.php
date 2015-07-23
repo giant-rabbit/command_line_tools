@@ -23,10 +23,23 @@ class Command {
     return true ;
   }
 
+  public static function commandToClassname($command_name) {
+    $a = explode('-',$command_name) ;
+    $b = array_map('ucfirst', $a) ;
+    return implode('',$b) ;
+  }
+
+  public static function classnameToCommand($class_name) {
+    preg_match_all('/[A-Z][^A-Z]*/', $class_name, $results) ;
+    $a = array_map('strtolower', $results[0]) ;
+    $ret = implode('-',$a) ;
+    return $ret ;
+  }
+
   public function command_name() {
     $a = explode("\\", get_class($this)) ;
     $className = $a[sizeof($a)-1] ;
-    return classnameToCommand($className) ;
+    return self::classnameToCommand($className) ;
   }
 
   public function get_cli_dir() {

@@ -70,7 +70,7 @@ EOT;
 
   public function __construct($opts = FALSE, $args = FALSE) {
     parent::__construct($opts, $args) ;
-    $this->site_info = new \SiteInfo();
+    $this->site_info = new \GR\SiteInfo();
     $this->type = \GR\Hash::fetch($opts, 'type', $this->site_info->environment);
     $this->set_database_credentials();
     $this->domain = \GR\Hash::fetch($opts, 'domain', 'giantrabbit.com');

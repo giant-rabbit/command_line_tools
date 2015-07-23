@@ -31,7 +31,7 @@ EOT;
   public function __construct($opts = FALSE, $args = FALSE) {
     parent::__construct($opts, $args);
     $root = \GR\Hash::fetch($opts, 'root');
-    $this->site_info = new \SiteInfo($root);
+    $this->site_info = new \GR\SiteInfo($root);
     $this->site_info->get_database_connection();
     $this->bootstrap_s3();
   }
