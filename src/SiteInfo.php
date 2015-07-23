@@ -27,7 +27,7 @@ class SiteInfo {
   public function get_root_path_and_environment($start_path) {
     $root_path = FALSE;
 
-    $start_path = empty($start_path) ? $this->getcwd() : $start_path;
+    $start_path = empty($start_path) ? getcwd() : $start_path;
     foreach (array(TRUE, FALSE) as $follow_symlinks) {
       $path = $start_path;
       if ($follow_symlinks && is_link($path)) {
@@ -54,24 +54,6 @@ class SiteInfo {
     $this->root_path = $root_path;
   }
      
-  /**
-   * Returns the current working directory.
-   *
-   * This is the directory as it was when the gr command started, not the
-   * directory we are currently in. For that, use getcwd() directly.
-   */
-  public function getcwd() {
-    // We use PWD if available because getcwd() resolves symlinks, which
-    // could take us outside of the Drupal root, making it impossible to find.
-    // $_SERVER['PWD'] isn't set on windows and generates a Notice.
-    $path = isset($_SERVER['PWD']) ? $_SERVER['PWD'] : '';
-    if (empty($path)) {
-      $path = getcwd();
-    }
-
-    return $path;
-  }
-
   /**
    * Returns parent directory.
    *
