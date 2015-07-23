@@ -12,7 +12,7 @@ class Wordpress {
 
   public static function get_web_writeable_paths($root_path) {
     $web_writeable_paths = glob($root_path . "/wp-content/uploads");
-    $web_writeable_paths = array_merge($this->web_writeable_paths, glob($root_path . "/wp-content/themes/*/cache"));
+    $web_writeable_paths = array_merge($web_writeable_paths, glob($root_path . "/wp-content/themes/*/cache"));
     $web_writeable_paths[] = $root_path . "/wp-content/blogs.dir";
     $web_writeable_paths[] = $root_path . "/wp-content/plugins/really-simple-captcha/tmp";
 
