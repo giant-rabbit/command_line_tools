@@ -27,6 +27,7 @@ class RestoreLatestS3Backup extends Command {
 EOT;
 
   public $site_info;
+  public $s3;
 
   public function __construct($opts = FALSE, $args = FALSE) {
     parent::__construct($opts, $args);
@@ -46,12 +47,12 @@ EOT;
     if (empty($contents)) $this->exit_with_message("Nothing found in bucket. Check your credentials and bucket name.");
 
     foreach ($contents as $file) {
-      if (substr($file['name'],-9) == '.mysql.gz') {
-        $db_array[$file['time']] = $file['name'];
+      if (substr($file['Key'],-9) == '.mysql.gz') {
+        $db_array[$file['LastModified']] = $file['Key'];
       }
 
-      if (substr($file['name'],-7) == '.tar.gz') {
-        $files_array[$file['time']] = $file['name'];
+      if (substr($file['Key'],-7) == '.tar.gz') {
+        $files_array[$file['LastModified']] = $file['Key'];
       }
     }
 
@@ -85,17 +86,31 @@ EOT;
     || !isset($this->opts['bucket'])) {
       $this->fetch_aws_credentials() ;
     }
-
-    \S3::setAuth($this->opts['id'], $this->opts['secret']) ;
+    $this->s3 = \Aws\S3\S3Client::factory(
+      array(
+        'key' => $this->opts['id'],
+        'secret' => $this->opts['secret'],
+      )
+    );
   }
 
   public function get_bucket_contents() {
-    $bucket = $this->opts['bucket'];
     $prefix = NULL;
     if (array_key_exists('prefix', $this->opts)) {
       $prefix = $this->opts['prefix'];
     }
-    return \S3::getBucket($bucket, $prefix);
+    $bucket = $this->s3->listObjects(array(
+      'Bucket' => $this->opts['bucket'],
+      'Prefix' => $prefix,
+    ));
+    $objects = array();
+    if (isset($bucket['Contents'])) {
+      foreach ($bucket['Contents'] as $object) {
+        $objects[] = $object;
+      }
+    }
+
+    return $objects;
   }
 
   public function fetch_aws_credentials() {
@@ -167,7 +182,11 @@ EOT;
     $timestamp = date("U");
     $db_dest = str_replace('/','_',$db_dump);
     $dest = "{$tmp_dir}/{$timestamp}_{$db_dest}";
-    \S3::getObject($bucket, $db_dump, $dest);
+    $object = $this->s3->getObject(array(
+      'Bucket' => $bucket,
+      'Key' => $db_dump,
+      'SaveAs' => $dest,
+    ));
 
     $should_fix_definer = !\GR\Hash::fetch($this->opts,'no-fix-definer');
     if ($should_fix_definer) {
@@ -200,7 +219,11 @@ EOT;
     $timestamp = date("U");
     $files_dest = str_replace('/','_',$files_tarball);
     $tmp_dest = "{$tmp_dir}/{$timestamp}_{$files_dest}";
-    \S3::getObject($bucket, $files_tarball, $tmp_dest);
+    $object = $this->s3->GetObject(array(
+      'Bucket' => $bucket,
+      'Key' => $files_tarball,
+      'SaveAs' => $tmp_dest,
+    ));
 
     $this->print_line("  Deleting contents of sites/default/files...");
     \GR\Shell::command("rm -rf sites/default/files");

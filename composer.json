@@ -1,7 +1,8 @@
 {
     "require": { 
       "corneltek/getoptionkit": "~1.2",
-      "giant-rabbit/php-util": "dev-master"
+      "giant-rabbit/php-util": "dev-master",
+      "aws/aws-sdk-php": "2.*"
     },
     
     "require-dev": {
