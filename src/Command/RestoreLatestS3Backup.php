@@ -29,7 +29,7 @@ EOT;
   public $site_info;
   public $s3;
 
-  public function __construct($opts = FALSE, $args = FALSE) {
+  public function __construct($opts = array(), $args = FALSE) {
     parent::__construct($opts, $args);
     $root = \GR\Hash::fetch($opts, 'root');
     $this->site_info = new \GR\SiteInfo($root);
@@ -152,6 +152,37 @@ EOT;
     exit;
   }
 
+  public function find_files_path($dir_to_check) {
+    $found = FALSE;
+    $files_path = "$dir_to_check/sites/default/files";
+    if (is_dir($files_path)) {
+      $found = TRUE;
+    } else {
+      $dir = opendir($dir_to_check);
+      if ($dir === FALSE) {
+        throw new \Exception("Unable to open '$dir_to_check': " . print_r(error_get_last(), TRUE));
+      }
+      $sub_dir_names = array();
+      while (($entry = readdir($dir)) !== FALSE) {
+        if ($entry == "." || $entry == "..") {
+          continue;
+        }
+        $sub_dir_names[] = $entry;
+      }
+      foreach ($sub_dir_names as $sub_dir_name) {
+        $files_path = "$dir_to_check/$sub_dir_name/files";
+        if (is_dir($files_path)) {
+          $found = TRUE;
+          break;
+        }
+      }
+    }
+    if (!$found) {
+      $files_path = $dir_to_check;
+    }
+    return $files_path;
+  }
+
   protected function parse_aws_url($url) {
     //$regex = "/^[http|https]\:\/\/(.+?):(.+?)@s3\.amazonaws\.com\/(.+?)\/?$/" ;
     $regex = "/^http[s]?\:\/\/(.+?):(.+?)@s3\.amazonaws\.com\/(.+?)$/" ;
@@ -238,34 +269,8 @@ EOT;
     $this->print_line("  Unzipping to $tmp_extracted_dest");
     $cmd = "tar -xvf {$tmp_dest} -C {$tmp_extracted_dest}";
     \GR\Shell::command($cmd, array('throw_exception_on_nonzero'=>true));
-    $files_path = "$tmp_extracted_dest/sites/default/files";
-    $found = FALSE;
-    if (is_dir($files_path)) {
-      $found = TRUE;
-    } else {
-      $dir = opendir($tmp_extracted_dest);
-      if ($dir === FALSE) {
-        throw new \Exception("Unable to open '$tmp_extracted_dest': " . print_r(error_get_last(), TRUE));
-      }
-      $sub_dir_names = array();
-      while (($entry = readdir($dir)) !== FALSE) {
-        if ($entry == "." || $entry == "..") {
-          continue;
-        }
-        $sub_dir_names[] = $entry;
-      }
-      foreach ($sub_dir_names as $sub_dir_name) {
-        $files_path = "$tmp_extracted_dest/$sub_dir_name/files";
-        if (is_dir($files_path)) {
-          $found = TRUE;
-          break;
-        }
-      }
-    }
-    if (!$found) {
-      throw new \Exception("Couldn't find files directory in extracted files at '$tmp_extracted_dest'.");
-    }
-    \GR\Shell::command("mv {$files_path} {$this->site_info->root_path}/sites/default/");
+    $files_path = $this->find_files_path($tmp_extracted_dest);
+    \GR\Shell::command("mv --no-target-directory {$files_path} {$this->site_info->root_path}/sites/default/files");
     $this->print_line('Files successfully restored from backup.');
     $this->print_line("\nYou may need to run `gr set-perms`");
     $this->print_line('');
