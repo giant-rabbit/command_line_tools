@@ -31,14 +31,15 @@ EOT;
 
   public function __construct($opts = array(), $args = FALSE) {
     parent::__construct($opts, $args);
-    $root = \GR\Hash::fetch($opts, 'root');
-    $this->site_info = new \GR\SiteInfo($root);
-    $this->site_info->get_database_connection();
-    $this->bootstrap_s3();
+    $this->root = \GR\Hash::fetch($opts, 'root');
   }
 
   public function run() {
     if (!parent::run()) { return FALSE; }
+
+    $this->site_info = new \GR\SiteInfo($this->root);
+    $this->site_info->get_database_connection();
+    $this->bootstrap_s3();
 
     $contents = $this->get_bucket_contents();
     $db_array = array();
@@ -86,12 +87,14 @@ EOT;
     || !isset($this->opts['bucket'])) {
       $this->fetch_aws_credentials() ;
     }
-    $this->s3 = \Aws\S3\S3Client::factory(
-      array(
-        'key' => $this->opts['id'],
-        'secret' => $this->opts['secret'],
-      )
+    $config = array(
+      'key' => $this->opts['id'],
+      'secret' => $this->opts['secret'],
     );
+    if (\GR\Hash::fetch($this->opts, 'endpoint') !== NULL) {
+      $config['endpoint'] = $this->opts['endpoint'];
+    }
+    $this->s3 = \Aws\S3\S3Client::factory($config);
   }
 
   public function get_bucket_contents() {
@@ -309,15 +312,16 @@ EOT;
   public static function option_kit() {
     $specs = Command::option_kit() ; // DO NOT DELETE THIS LINE
 
-    $specs->add("r|root?",   "Local root directory of site") ;
-    $specs->add("i|id?",     "AWS Access Key ID") ;
-    $specs->add("s|secret?", "AWS Secret Access Key") ;
     $specs->add("b|bucket?", "S3 Bucket from which to retrieve backup") ;
+    $specs->add("e|endpoint?", "S3 Endpoint");
+    $specs->add("i|id?",     "AWS Access Key ID") ;
     $specs->add("p|prefix?", "Prefix to filter results in bucket");
-    $specs->add("no-fix-definer", "Don't run `gr fix-definer` on MySQL backup before importing");
-    $specs->add("no-prompts", "Execute command with no confirmation prompts. Useful for running in automated processes.");
+    $specs->add("r|root?",   "Local root directory of site") ;
+    $specs->add("s|secret?", "AWS Secret Access Key") ;
     $specs->add("exclude-files", "Don't restore files directories") ;
     $specs->add('keep-schedules', "Don't disable Backup and Migrate schedules after restoring database");
+    $specs->add("no-fix-definer", "Don't run `gr fix-definer` on MySQL backup before importing");
+    $specs->add("no-prompts", "Execute command with no confirmation prompts. Useful for running in automated processes.");
 
     return $specs ; // DO NOT DELETE
   }
