@@ -223,6 +223,7 @@ EOT;
     ));
 
     $should_fix_definer = !\GR\Hash::fetch($this->opts,'no-fix-definer');
+    $import_me = $dest;
     if ($should_fix_definer) {
       $this->print_line("  Stripping DEFINER clauses from DB dump...");
       $import_me = preg_replace("/\.mysql.gz$/",".stripped.mysql.gz", $dest);
