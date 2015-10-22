@@ -5,19 +5,20 @@
         "This file is @generated automatically"
     ],
     "hash": "758fed9fa49a3c2ec3326678d55abf47",
+    "content-hash": "ab075f3e4f6a8fe1cc1545ccce2b01f7",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "2.8.14",
+            "version": "2.8.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "cc3f63f695e15e4b1e6ee0e090c32bfde78115a4"
+                "reference": "d24eb9c69e5b6bdab53a7e223e58507bbea842dd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/cc3f63f695e15e4b1e6ee0e090c32bfde78115a4",
-                "reference": "cc3f63f695e15e4b1e6ee0e090c32bfde78115a4",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d24eb9c69e5b6bdab53a7e223e58507bbea842dd",
+                "reference": "d24eb9c69e5b6bdab53a7e223e58507bbea842dd",
                 "shasum": ""
             },
             "require": {
@@ -67,7 +68,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2015-07-14 20:48:28"
+            "time": "2015-10-15 21:08:01"
         },
         {
             "name": "corneltek/getoptionkit",
@@ -116,12 +117,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/giant-rabbit/php-util.git",
-                "reference": "6f12262fff5ed335f42f356073843a1de924a27e"
+                "reference": "de63dac18da482654af893c287f98d9e91c61dfa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giant-rabbit/php-util/zipball/6f12262fff5ed335f42f356073843a1de924a27e",
-                "reference": "6f12262fff5ed335f42f356073843a1de924a27e",
+                "url": "https://api.github.com/repos/giant-rabbit/php-util/zipball/de63dac18da482654af893c287f98d9e91c61dfa",
+                "reference": "de63dac18da482654af893c287f98d9e91c61dfa",
                 "shasum": ""
             },
             "require-dev": {
@@ -150,7 +151,7 @@
             ],
             "description": "Some PHP functions we use a lot.",
             "homepage": "https://github.com/giant-rabbit/php-util",
-            "time": "2015-07-22 00:46:54"
+            "time": "2015-10-21 21:01:20"
         },
         {
             "name": "guzzle/guzzle",
@@ -249,16 +250,16 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.7.2",
+            "version": "v2.7.5",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/EventDispatcher.git",
-                "reference": "9310b5f9a87ec2ea75d20fec0b0017c77c66dac3"
+                "url": "https://github.com/symfony/event-dispatcher.git",
+                "reference": "ae4dcc2a8d3de98bd794167a3ccda1311597c5d9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/9310b5f9a87ec2ea75d20fec0b0017c77c66dac3",
-                "reference": "9310b5f9a87ec2ea75d20fec0b0017c77c66dac3",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/ae4dcc2a8d3de98bd794167a3ccda1311597c5d9",
+                "reference": "ae4dcc2a8d3de98bd794167a3ccda1311597c5d9",
                 "shasum": ""
             },
             "require": {
@@ -303,7 +304,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2015-06-18 19:21:56"
+            "time": "2015-09-22 13:49:29"
         }
     ],
     "packages-dev": [
@@ -370,16 +371,16 @@
         },
         {
             "name": "phpunit/php-file-iterator",
-            "version": "1.4.0",
+            "version": "1.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-file-iterator.git",
-                "reference": "a923bb15680d0089e2316f7a4af8f437046e96bb"
+                "reference": "6150bf2c35d3fc379e50c7602b75caceaa39dbf0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-file-iterator/zipball/a923bb15680d0089e2316f7a4af8f437046e96bb",
-                "reference": "a923bb15680d0089e2316f7a4af8f437046e96bb",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-file-iterator/zipball/6150bf2c35d3fc379e50c7602b75caceaa39dbf0",
+                "reference": "6150bf2c35d3fc379e50c7602b75caceaa39dbf0",
                 "shasum": ""
             },
             "require": {
@@ -413,7 +414,7 @@
                 "filesystem",
                 "iterator"
             ],
-            "time": "2015-04-02 05:19:05"
+            "time": "2015-06-21 13:08:43"
         },
         {
             "name": "phpunit/php-text-template",
@@ -458,16 +459,16 @@
         },
         {
             "name": "phpunit/php-timer",
-            "version": "1.0.6",
+            "version": "1.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-timer.git",
-                "reference": "83fe1bdc5d47658b727595c14da140da92b3d66d"
+                "reference": "3e82f4e9fc92665fafd9157568e4dcb01d014e5b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-timer/zipball/83fe1bdc5d47658b727595c14da140da92b3d66d",
-                "reference": "83fe1bdc5d47658b727595c14da140da92b3d66d",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-timer/zipball/3e82f4e9fc92665fafd9157568e4dcb01d014e5b",
+                "reference": "3e82f4e9fc92665fafd9157568e4dcb01d014e5b",
                 "shasum": ""
             },
             "require": {
@@ -495,7 +496,7 @@
             "keywords": [
                 "timer"
             ],
-            "time": "2015-06-13 07:35:30"
+            "time": "2015-06-21 08:01:12"
         },
         {
             "name": "phpunit/php-token-stream",
@@ -671,16 +672,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v2.7.2",
+            "version": "v2.7.5",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/Yaml.git",
-                "reference": "4bfbe0ed3909bfddd75b70c094391ec1f142f860"
+                "url": "https://github.com/symfony/yaml.git",
+                "reference": "31cb2ad0155c95b88ee55fe12bc7ff92232c1770"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/4bfbe0ed3909bfddd75b70c094391ec1f142f860",
-                "reference": "4bfbe0ed3909bfddd75b70c094391ec1f142f860",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/31cb2ad0155c95b88ee55fe12bc7ff92232c1770",
+                "reference": "31cb2ad0155c95b88ee55fe12bc7ff92232c1770",
                 "shasum": ""
             },
             "require": {
@@ -716,7 +717,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2015-07-01 11:25:50"
+            "time": "2015-09-14 14:14:09"
         }
     ],
     "aliases": [],
