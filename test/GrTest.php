@@ -63,7 +63,7 @@ class GRTest extends GR\TestCase\TestCase {
   }
 
   public function testRunWithNoParamsPrintsUsage() {
-    $this->expectOutputRegex('/Usage: gr <app options> <subcommand> <subcommand options>/') ;
+    $this->expectOutputRegex('/gr <app options> <subcommand> <subcommand options>/') ;
     $gr = new GR\GR() ;
     $gr->run() ;
   }

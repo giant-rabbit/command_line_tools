@@ -1,8 +1,9 @@
 <?php 
 
 namespace GR\Command ;
-use GR\Command as Command ;
 
+use GR\Command;
+use GR\Path;
 
 /**
  * This command doesn't do anything, but is here as a template for people 
@@ -23,33 +24,9 @@ class SetPerms extends Command {
 This is the GR port of our trusty old set_perms tool, but works on wordpress sites as well as drupal
 EOT;
 
-  
-  /**
-   * Class constructor for your command
-   *
-   * If you need to override the constructor, be sure 
-   * to keep the call to the parent constructor in place.
-   * The $opts and $args params are automatically given to the constructor
-   * by the main GR object and they are stored to $this->opts. 
-   * and $this->args respectively. These are associative array of the 
-   * arguments passed via the command line.
-   * 
-   * Eg. `gr example -f -b bar-value arg1 arg2` will create $opts as 
-   * Array [
-   *   foo => 1
-   *   bar => bar-value
-   * ]
-   * and $args as
-   * Array [
-   *   [0] => arg1,
-   *   [1] => arg2
-   * ]
-   * See the option_kit method below for more info on how
-   * to define your options
-   */
   public function __construct($opts=false,$args=false) {
     parent::__construct($opts,$args) ;
-    $this->directory = realpath(\GR\Hash::fetch($opts,'directory','.'));
+    $this->directory = realpath(\GR\Hash::fetch($opts, 'directory', '.'));
     $this->site_info = new \GR\SiteInfo($this->directory);
     $process_user = posix_getpwuid(posix_geteuid());
     $this->user = \GR\Hash::fetch($opts, 'user', $process_user['name']);
@@ -63,8 +40,51 @@ EOT;
     }    
     
   }
-  
-  
+
+  public function apply_exception_rules() {
+    $exception_rules = $this->load_exception_rules();
+    $rule_index = -1;
+    foreach ($exception_rules as $exception_rule) {
+      $rule_index += 1;
+      $user_type = $exception_rule[0];
+      $relative_path = $exception_rule[1];
+      $user_name = NULL;
+      $group_name = NULL;
+      if ($user_type === 'www-data') {
+        $user_name = $this->web_user;
+        $group_name = $this->web_user;
+      } elseif ($user_type === 'user') {
+        $user_name = $this->user;
+        $group_name = $this->group;
+      } else {
+        throw new \Exception("Invalid user_type ($user_type) for rule index $rule_index: " . print_r($exception_rule, TRUE));
+      }
+      $full_path = Path::join($this->directory, $relative_path);
+      $this->set_perms($user_name, $group_name, $full_path);
+    }
+    return \GR\Path::join($this->directory, '.gr-set-perms');
+  }
+
+  public function load_exception_rules() {
+    if (!file_exists($this->exceptions_file_path())) {
+      return array();
+    }
+    $exception_data = file_get_contents($this->exceptions_file_path());
+    $exception_lines = mb_split("\n", $exception_data);
+    $exception_rules = array();
+    foreach ($exception_lines as $exception_line) {
+      $exception_line = trim($exception_line);
+      if ($exception_line !== '') {
+        $exception_rules[] = mb_split("\s+", $exception_line, 2);
+      }
+    }
+    return $exception_rules;
+  }
+
+  public function exceptions_file_path() {
+    return \GR\Path::join($this->directory, '.gr-set-perms');
+  }
+
   /** 
    * Runs the command with the opts and args defined in the constructor
    * 
@@ -76,28 +96,22 @@ EOT;
    * and use the command-line parameters for your command
    */ 
   public function run() {
-    // keep this line
-    if (!parent::run()) { return false ; }
-    
+    if (!parent::run()) { 
+      return false ; 
+    }
+
     if (!$this->user || !$this->group) {
       $this->print_usage();
       exit;
     }
 
     $opts = array('print_command' => true);
-    \GR\Shell::command("chown -R {$this->user}:{$this->group} $this->directory", $opts);
-    \GR\Shell::command("find {$this->directory} -type d -print0 | xargs -0 chmod 2775", $opts);
-    \GR\Shell::command("find {$this->directory} -type f -print0 | xargs -0 chmod 664", $opts);
+    $this->set_perms($this->user, $this->group, $this->directory);
 
-    foreach ($this->site_info->web_writeable_paths as $file) {
-      if (is_dir($file)) {
-        \GR\Shell::command("chown -R {$this->web_user}:{$this->web_user} {$file}", $opts);
-	\GR\Shell::command("find {$file} -type d -print0 | xargs -0 chmod 2775", $opts);
-        if ($this->directory_contains_files($file)) {
-          \GR\Shell::command("find {$file} -type f -print0 | xargs -0 chmod 0664", $opts);
-        }
-      }
+    foreach ($this->site_info->web_writeable_paths as $path) {
+      $this->set_perms($this->web_user, $this->web_user, $path);
     }
+    $this->apply_exception_rules();
   }
 
   public function directory_contains_files($directory_path) {
@@ -112,41 +126,28 @@ EOT;
     $this->print_line("Usage: gr set-perms [-u <user> -g <group> -d <directory>]");
   }
   
-  
-  /**
-   * Returns the available options for your command
-   *
-   * The flag 'h|help' is inherited from the base GR\Command class,
-   * so you don't need to define it. Otherwise, you define your options
-   * here in the form:
-   *
-   * $specs->add("x|xray", "Description of xray option") ;
-   *
-   * where 'x' is the short form (-x) and 'xray' is the long
-   * form (--xray).
-   *
-   * Detailed spec for defining options:
-   *  v|verbose    flag option (with boolean value true)
-   *  d|dir:       option requires a value (MUST require)
-   *  d|dir+       option with multiple values.
-   *  d|dir?       option with optional value
-   *  dir:=s       option with type constraint of string
-   *  dir:=string  option with type constraint of string
-   *  dir:=i       option with type constraint of integer
-   *  dir:=integer option with type constraint of integer
-   *  d            single character only option
-   *  dir          long option name
-   *
-   * More info at https://github.com/c9s/php-GetOptionKit
-   */
   public static function option_kit() {
-    $specs = Command::option_kit() ; // DO NOT DELETE THIS LINE
+    $specs = Command::option_kit();
     
     $specs->add('u|user?', "User to own files. Defaults to the user who initiated the command.");
     $specs->add('g|group?', "Group to own files. Defaults to giantrabbit.");
     $specs->add("d|directory?", "Root directory of Drupal/Wordpress install. Defaults to current directory.");
     $specs->add("a|additional-site-files+", "Files or Directories other than sites/*/files or wp-content/uploads that should be owned by www-data");
-    $specs->add("w|web-user?", "(optional) User under which the web process runs. Defaults to www-data") ;
-    return $specs ; // DO NOT DELETE
+    $specs->add("w|web-user?", "(optional) User under which the web process runs. Defaults to www-data");
+    return $specs;
+  }
+
+  public function set_perms($user_name, $group_name, $path) {
+    /*
+    if (!is_dir($path)) {
+      return;
+    }
+    */
+    $opts = array('print_command' => true);
+    \GR\Shell::command("chown -R {$user_name}:{$group_name} $path", $opts);
+    \GR\Shell::command("find $path -type d -print0 | xargs -0 chmod 2755", $opts);
+    if ($this->directory_contains_files($path)) {
+      \GR\Shell::command("find {$path} -type f -print0 | xargs -0 chmod 0664", $opts);
+    }
   }
 }

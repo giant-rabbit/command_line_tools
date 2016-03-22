@@ -1,5 +1,10 @@
 <?php
-namespace GR\TestCase ;
+
+namespace GR\TestCase;
+
+require_once('vendor/autoload.php');
+
+use \GR\Path;
 
 /**
  * This is a class from which all of your test cases should inherit.
@@ -9,18 +14,20 @@ namespace GR\TestCase ;
 
 class TestCase extends \PHPUnit_Framework_TestCase {
 
-  protected $config;
-  protected $drupal_root;
-  protected $files_root;
-  protected $misc_root;
-  protected $wp_root;
+  public $config;
+  public $drupal_root;
+  public $files_root;
+  public $misc_root;
+  public $test_root;
+  public $wp_root;
 
   public function __construct() {
     parent::__construct() ;
-    $this->files_root = TEST_ROOT . '/files' ;
-    $this->wp_root = TEST_ROOT . '/files/wordpress' ;
-    $this->drupal_root = TEST_ROOT . '/files/drupal' ;
-    $this->misc_root = TEST_ROOT . '/files/misc' ;
+    $this->test_root = Path::join(__DIR__, "..", "..", "test");
+    $this->files_root = Path::join($this->test_root, 'files');
+    $this->wp_root = Path::join($this->files_root, 'wordpress');
+    $this->drupal_root = Path::join($this->files_root, 'drupal');
+    $this->misc_root = Path::join($this->files_root, 'misc');
     
     $config = $this->get_config() ;
     $this->config = $config ;
@@ -38,9 +45,9 @@ class TestCase extends \PHPUnit_Framework_TestCase {
   }
   
   protected function get_config() {
-    return json_decode(file_get_contents(TEST_ROOT . "/config.json"));
+    return json_decode(file_get_contents(Path::join($this->test_root, "config.json")));
   }
-  
+
   protected function get_drupal_db() {
     $cnf = $this->config->databases->drupal ;
     $dbn = "mysql:host={$cnf->hostname};dbname={$cnf->database}";

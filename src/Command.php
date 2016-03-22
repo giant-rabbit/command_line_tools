@@ -43,8 +43,7 @@ class Command {
   }
 
   public function get_cli_dir() {
-    $a = Shell::command('pwd');
-    return trim($a[0]);
+    return getcwd();
   }
 
   public function set_working_directory($dir) {
