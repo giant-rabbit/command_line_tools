@@ -142,7 +142,7 @@ EOT;
     if (file_exists($path)) {
       \GR\Shell::command("chown -R {$user_name}:{$group_name} $path", $opts);
       if (is_dir($path)) {
-        \GR\Shell::command("find $path -type d -print0 | xargs -0 chmod 2755", $opts);
+        \GR\Shell::command("find $path -type d -print0 | xargs -0 chmod 2775", $opts);
         if ($this->directory_contains_files($path)) {
           $command = "find {$path} -type f -print0 | xargs -0 chmod 0664";
           \GR\Shell::command("find {$path} -type f -print0 | xargs -0 chmod 0664", $opts);
