@@ -138,16 +138,18 @@ EOT;
   }
 
   public function set_perms($user_name, $group_name, $path) {
-    /*
-    if (!is_dir($path)) {
-      return;
-    }
-    */
     $opts = array('print_command' => true);
-    \GR\Shell::command("chown -R {$user_name}:{$group_name} $path", $opts);
-    \GR\Shell::command("find $path -type d -print0 | xargs -0 chmod 2755", $opts);
-    if ($this->directory_contains_files($path)) {
-      \GR\Shell::command("find {$path} -type f -print0 | xargs -0 chmod 0664", $opts);
+    if (file_exists($path)) {
+      \GR\Shell::command("chown -R {$user_name}:{$group_name} $path", $opts);
+      if (is_dir($path)) {
+        \GR\Shell::command("find $path -type d -print0 | xargs -0 chmod 2755", $opts);
+        if ($this->directory_contains_files($path)) {
+          $command = "find {$path} -type f -print0 | xargs -0 chmod 0664";
+          \GR\Shell::command("find {$path} -type f -print0 | xargs -0 chmod 0664", $opts);
+        }
+      } else {
+        \GR\Shell::command("chmod 0664 $path", $opts);
+      }
     }
   }
 }
